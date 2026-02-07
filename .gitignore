@@ -5,10 +5,12 @@
 *.xcworkspace/*
 !*.xcworkspace/contents.xcworkspacedata
 *.xcuserstate
-*.xcuserdatad
+*.xcuserdata
 
 # macOS
 .DS_Store
 
 # API Key
+MovieApp/Configuration/APIKey.plist
 Configuration/APIKey.plist
+**/APIKey.plist
