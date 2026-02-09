@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 @MainActor
-final class MovieViewModel {
+final class MediaViewModel {
     // Callback closures for UI updates
     var onMovieUpdated: ((MovieDisplayModel) -> Void)?
     var onError: ((String) -> Void)?
@@ -27,34 +27,49 @@ final class MovieViewModel {
         self.imageService = imageService
     }
     
-    func searchMovies(query: String) {
+    func searchMulti(query: String) {
         guard !query.isEmpty else { return }
         
         isLoading = true
         
         Task {
             do {
-                let movies = try await movieService.searchMovies(query: query)
+                let movies = try await movieService.searchMulti(query: query)
                 
-                guard let firstMovie = movies.first else {
+                guard let firstItem = movies.first else {
                     self.isLoading = false
                     self.onError?("No movies found")
                     return
                 }
                 
+                let title = firstItem.title
+                let name = firstItem.name
+                let overview = firstItem.overview ?? "Sorry! We could not find the words to describe this :("
+                let rating = firstItem.voteAverage
+                let knownForDepartment = firstItem.knownForDepartment
+                
+                let genres: [String]
+                if firstItem.mediaType == "person" {
+                    genres = ["knownForDepartment"]
+                } else {
+                    genres = firstItem.genreNames(using: GenreManager.shared.genres)
+                }
+                
                 // Load image
                 var image: UIImage? = nil
-                if let posterURL = firstMovie.fullPosterURL {
-                    image = try? await imageService.loadImage(from: posterURL)
+                if let posterURL = firstItem.displayImagePath,
+                   let url = URL(string: "https://image.tmdb.org/t/p/w500\(posterURL)") {
+                    image = try? await imageService.loadImage(from: url)
                 }
                 
                 // Create display model
                 let displayModel = MovieDisplayModel(
-                    title: firstMovie.title,
-                    overview: firstMovie.overview,
-                    rating: firstMovie.voteAverage,
+                    title: title ?? name ?? "unknown",
+                    overview: overview,
+                    rating: rating ?? 0.0,
                     image: image,
-                    genres: firstMovie.genreNames(using: GenreManager.shared.genres)
+                    genres: genres,
+                    isPerson: knownForDepartment != nil
                 )
                 
                 self.isLoading = false

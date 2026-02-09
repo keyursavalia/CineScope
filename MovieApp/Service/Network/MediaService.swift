@@ -1,6 +1,6 @@
 import Foundation
 
-final class MovieService: MovieServiceProtocol {
+final class MediaService: MovieServiceProtocol {
     private let baseURL = "https://api.themoviedb.org/3"
     private let apiToken: String
     private let session: URLSession
@@ -11,9 +11,9 @@ final class MovieService: MovieServiceProtocol {
         self.session = session
     }
     
-    func searchMovies(query: String) async throws -> [Movie] {
+    func searchMulti(query: String) async throws -> [MediaItem] {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "\(baseURL)/search/movie?query=\(encodedQuery)") else {
+              let url = URL(string: "\(baseURL)/search/multi?query=\(encodedQuery)") else {
             throw NetworkError.invalidURL
         }
         
@@ -34,7 +34,7 @@ final class MovieService: MovieServiceProtocol {
             }
             
             let decoder = JSONDecoder()
-            let movieResponse = try decoder.decode(MovieResponse.self, from: data)
+            let movieResponse = try decoder.decode(SearchResponse.self, from: data)
             return movieResponse.results
             
         } catch let error as NetworkError {

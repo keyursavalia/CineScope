@@ -1,14 +1,15 @@
 import UIKit
 
-struct MovieDisplayModel {
+struct MediaDisplayModel {
     let title: String
     let overview: String
     let rating: Float
     let image: UIImage?
     let genres: [String]
+    let isPerson: Bool
     
     var ratingText: String {
-        String(format: "%.1f", rating)
+        return isPerson ? "" : String(format: "%.1f", rating)
     }
     
     var ratingColor: UIColor {
