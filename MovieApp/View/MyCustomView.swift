@@ -226,7 +226,7 @@ final class MovieDetailView: UIView {
     }
     
     // MARK: - Public Methods
-    func update(with model: MovieDisplayModel) {
+    func update(with model: MediaDisplayModel) {
         movieNameLabel.text = model.title
         movieDescriptionLabel.text = model.overview
         ratingLabel.text = model.ratingText
@@ -234,6 +234,8 @@ final class MovieDetailView: UIView {
         starImageView.tintColor = model.ratingColor
         movieImageView.image = model.image
         genreStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        ratingStack.isHidden = model.isPerson
         
         for genreName in model.genres {
             let pill = createGenrePill(with: genreName)

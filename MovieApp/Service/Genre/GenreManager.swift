@@ -2,12 +2,12 @@ import Foundation
 
 final class GenreManager {
     static let shared = GenreManager()
-    private let movieService: MovieServiceProtocol
+    private let movieService: MediaServiceProtocol
     private let coreDataManager: CoreDataManager
     
     private(set) var genres: [Int: String] = [:]
 
-    init(movieService: MovieServiceProtocol = MovieService(),
+    init(movieService: MediaServiceProtocol = MediaService(),
          coreDataManager: CoreDataManager = .shared) {
         self.movieService = movieService
         self.coreDataManager = coreDataManager

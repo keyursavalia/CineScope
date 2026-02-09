@@ -1,6 +1,6 @@
 import Foundation
 
-final class MediaService: MovieServiceProtocol {
+final class MediaService: MediaServiceProtocol {
     private let baseURL = "https://api.themoviedb.org/3"
     private let apiToken: String
     private let session: URLSession

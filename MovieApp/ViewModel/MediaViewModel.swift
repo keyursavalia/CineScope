@@ -4,11 +4,11 @@ import UIKit
 @MainActor
 final class MediaViewModel {
     // Callback closures for UI updates
-    var onMovieUpdated: ((MovieDisplayModel) -> Void)?
+    var onMediaUpdated: ((MediaDisplayModel) -> Void)?
     var onError: ((String) -> Void)?
     var onLoadingChanged: ((Bool) -> Void)?
     
-    private let movieService: MovieServiceProtocol
+    private let mediaService: MediaServiceProtocol
     private let imageService: ImageServiceProtocol
     
     private(set) var isLoading = false {
@@ -20,10 +20,10 @@ final class MediaViewModel {
     // Dependency injection for testability
     // nonisolated allows this to be called from any context
     nonisolated init(
-        movieService: MovieServiceProtocol = MovieService(),
+        movieService: MediaServiceProtocol = MediaService(),
         imageService: ImageServiceProtocol = ImageService()
     ) {
-        self.movieService = movieService
+        self.mediaService = movieService
         self.imageService = imageService
     }
     
@@ -34,7 +34,7 @@ final class MediaViewModel {
         
         Task {
             do {
-                let movies = try await movieService.searchMulti(query: query)
+                let movies = try await mediaService.searchMulti(query: query)
                 
                 guard let firstItem = movies.first else {
                     self.isLoading = false
@@ -63,7 +63,7 @@ final class MediaViewModel {
                 }
                 
                 // Create display model
-                let displayModel = MovieDisplayModel(
+                let displayModel = MediaDisplayModel(
                     title: title ?? name ?? "unknown",
                     overview: overview,
                     rating: rating ?? 0.0,
@@ -73,7 +73,7 @@ final class MediaViewModel {
                 )
                 
                 self.isLoading = false
-                self.onMovieUpdated?(displayModel)
+                self.onMediaUpdated?(displayModel)
                 
             } catch {
                 self.isLoading = false

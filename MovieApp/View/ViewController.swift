@@ -3,16 +3,16 @@ import UIKit
 final class ViewController: UIViewController {
     
     private let movieDetailView = MovieDetailView()
-    private let viewModel: MovieViewModel
+    private let viewModel: MediaViewModel
     
     // Dependency injection for testability
-    init(viewModel: MovieViewModel = MovieViewModel()) {
+    init(viewModel: MediaViewModel = MediaViewModel()) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
-        self.viewModel = MovieViewModel()
+        self.viewModel = MediaViewModel()
         super.init(coder: coder)
     }
     
@@ -38,7 +38,7 @@ final class ViewController: UIViewController {
     }
     
     private func setupViewModel() {
-        viewModel.onMovieUpdated = { [weak self] model in
+        viewModel.onMediaUpdated = { [weak self] model in
             self?.movieDetailView.update(with: model)
         }
         
@@ -64,6 +64,6 @@ extension ViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let searchText = searchBar.text, !searchText.isEmpty else { return }
         searchBar.resignFirstResponder()
-        viewModel.searchMovies(query: searchText)
+        viewModel.searchMulti(query: searchText)
     }
 }
