@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieDetailView: UIView {
+final class MediaDetailView: UIView {
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -31,14 +31,6 @@ final class MovieDetailView: UIView {
         stack.alignment = .top
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
-    }()
-    
-    let searchBar: UISearchBar = {
-        let bar = UISearchBar()
-        bar.placeholder = "Search for a movie..."
-        bar.searchBarStyle = .minimal
-        bar.translatesAutoresizingMaskIntoConstraints = false
-        return bar
     }()
     
     private let movieNameLabel: UILabel = {
@@ -134,7 +126,6 @@ final class MovieDetailView: UIView {
     }
     
     private func addSubviews() {
-        addSubview(searchBar)
         addSubview(scrollView)
         scrollView.addSubview(contentView)
         
@@ -157,13 +148,8 @@ final class MovieDetailView: UIView {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // Search bar
-            searchBar.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
-            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            
             // Scroll view
-            scrollView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 10),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),

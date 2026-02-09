@@ -7,6 +7,9 @@ final class MediaViewModel {
     var onMediaUpdated: ((MediaDisplayModel) -> Void)?
     var onError: ((String) -> Void)?
     var onLoadingChanged: ((Bool) -> Void)?
+    var onSearchResultsUpdated: (([MediaItem]) -> Void)?
+    
+    private(set) var mediaItems: [MediaItem] = []
     
     private let mediaService: MediaServiceProtocol
     private let imageService: ImageServiceProtocol
@@ -34,51 +37,53 @@ final class MediaViewModel {
         
         Task {
             do {
-                let movies = try await mediaService.searchMulti(query: query)
+                let items = try await mediaService.searchMulti(query: query)
                 
-                guard let firstItem = movies.first else {
+                guard !items.isEmpty else {
                     self.isLoading = false
-                    self.onError?("No movies found")
+                    self.onError?("No results found")
                     return
                 }
                 
-                let title = firstItem.title
-                let name = firstItem.name
-                let overview = firstItem.overview ?? "Sorry! We could not find the words to describe this :("
-                let rating = firstItem.voteAverage
-                let knownForDepartment = firstItem.knownForDepartment
-                
-                let genres: [String]
-                if firstItem.mediaType == "person" {
-                    genres = ["knownForDepartment"]
-                } else {
-                    genres = firstItem.genreNames(using: GenreManager.shared.genres)
-                }
-                
-                // Load image
-                var image: UIImage? = nil
-                if let posterURL = firstItem.displayImagePath,
-                   let url = URL(string: "https://image.tmdb.org/t/p/w500\(posterURL)") {
-                    image = try? await imageService.loadImage(from: url)
-                }
-                
-                // Create display model
-                let displayModel = MediaDisplayModel(
-                    title: title ?? name ?? "unknown",
-                    overview: overview,
-                    rating: rating ?? 0.0,
-                    image: image,
-                    genres: genres,
-                    isPerson: knownForDepartment != nil
-                )
-                
+                self.mediaItems = items
                 self.isLoading = false
-                self.onMediaUpdated?(displayModel)
+                self.onSearchResultsUpdated?(items)
                 
             } catch {
                 self.isLoading = false
                 self.onError?("Error: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func buildDisplayModel(for item: MediaItem) async -> MediaDisplayModel {
+        let title = item.title ?? item.name ?? "Unknown"
+        let overview = item.overview ?? "Sorry! We could not find the words to describe this :("
+        let rating = item.voteAverage ?? 0.0
+        let isPerson = item.knownForDepartment != nil
+        
+        // Resolve genres
+        let genres: [String]
+        if item.mediaType == "person" {
+            genres = [item.knownForDepartment ?? "Unknown"]
+        } else {
+            genres = item.genreNames(using: GenreManager.shared.genres)
+        }
+        
+        // Load the poster image
+        var image: UIImage? = nil
+        if let posterPath = item.displayImagePath,
+           let url = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)") {
+            image = try? await imageService.loadImage(from: url)
+        }
+        
+        return MediaDisplayModel(
+            title: title,
+            overview: overview,
+            rating: rating,
+            image: image,
+            genres: genres,
+            isPerson: isPerson
+        )
     }
 }
