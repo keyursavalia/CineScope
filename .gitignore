@@ -14,3 +14,20 @@
 MovieApp/Configuration/APIKey.plist
 Configuration/APIKey.plist
 **/APIKey.plist
+
+# Build results
+build/
+DerivedData/
+
+# Core Data generated files (The data, not the model)
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Swift Package Manager
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.build/
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace

@@ -53,7 +53,8 @@ final class MovieViewModel {
                     title: firstMovie.title,
                     overview: firstMovie.overview,
                     rating: firstMovie.voteAverage,
-                    image: image
+                    image: image,
+                    genres: firstMovie.genreNames(using: GenreManager.shared.genres)
                 )
                 
                 self.isLoading = false

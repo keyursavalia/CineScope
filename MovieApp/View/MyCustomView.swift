@@ -44,6 +44,16 @@ final class MovieDetailView: UIView {
         return label
     }()
     
+    private let genreStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 8
+        stack.alignment = .center
+        stack.distribution = .equalSpacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     private let movieImageView: UIImageView = {
         let image = UIImageView()
         image.contentMode = .scaleAspectFill
@@ -93,6 +103,7 @@ final class MovieDetailView: UIView {
         contentView.addSubview(movieNameLabel)
         contentView.addSubview(movieRatingLabel)
         contentView.addSubview(movieDescriptionLabel)
+        contentView.addSubview(genreStackView)
     }
     
     private func setupConstraints() {
@@ -133,8 +144,14 @@ final class MovieDetailView: UIView {
             movieRatingLabel.heightAnchor.constraint(equalToConstant: 24),
             movieRatingLabel.widthAnchor.constraint(equalToConstant: 80),
             
+            // Genre
+            genreStackView.topAnchor.constraint(equalTo: movieRatingLabel.bottomAnchor, constant: 12),
+            genreStackView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            genreStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            genreStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
             // Description
-            movieDescriptionLabel.topAnchor.constraint(equalTo: movieRatingLabel.bottomAnchor, constant: 16),
+            movieDescriptionLabel.topAnchor.constraint(equalTo: genreStackView.bottomAnchor, constant: 16),
             movieDescriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             movieDescriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             movieDescriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
@@ -148,6 +165,18 @@ final class MovieDetailView: UIView {
         movieImageView.layer.shadowRadius = 8
     }
     
+    private func createGenrePill(with name: String) -> UILabel {
+        let label = UILabel()
+        label.text = name
+        label.font = .systemFont(ofSize: 12, weight: .bold)
+        label.textColor = .white
+        label.backgroundColor = .systemGray.withAlphaComponent(0.8)
+        label.textAlignment = .center
+        label.layer.cornerRadius = 12
+        label.clipsToBounds = true
+        return label
+    }
+    
     // MARK: - Public Methods
     func update(with model: MovieDisplayModel) {
         movieNameLabel.text = model.title
@@ -155,6 +184,17 @@ final class MovieDetailView: UIView {
         movieRatingLabel.text = model.ratingText
         movieRatingLabel.backgroundColor = model.ratingColor
         movieImageView.image = model.image
+        genreStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        for genreName in model.genres {
+            let pill = createGenrePill(with: genreName)
+            
+            // Optional: Add padding to the pill
+            pill.widthAnchor.constraint(equalToConstant: CGFloat(genreName.count * 8 + 20)).isActive = true
+            pill.heightAnchor.constraint(equalToConstant: 24).isActive = true
+            
+            genreStackView.addArrangedSubview(pill)
+        }
     }
     
     func clear() {

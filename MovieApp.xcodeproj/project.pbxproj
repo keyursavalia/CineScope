@@ -8,7 +8,7 @@
 
 /* Begin PBXFileReference section */
 		3CB6FBFB2F3697BE00A2F7E4 /* MovieApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MovieApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3CB6FC2B2F36E8C800A2F7E4 /* gitignore. */ = {isa = PBXFileReference; lastKnownFileType = text; path = gitignore.; sourceTree = "<group>"; };
+		3CB6FC2B2F36E8C800A2F7E4 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,7 +58,7 @@
 		3C0D7C122F35666A005D3466 = {
 			isa = PBXGroup;
 			children = (
-				3CB6FC2B2F36E8C800A2F7E4 /* gitignore. */,
+				3CB6FC2B2F36E8C800A2F7E4 /* .gitignore */,
 				3C0D7C1D2F35666A005D3466 /* MovieApp */,
 				3CB6FBFB2F3697BE00A2F7E4 /* MovieApp.app */,
 			);
