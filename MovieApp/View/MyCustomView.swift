@@ -15,6 +15,24 @@ final class MovieDetailView: UIView {
         return view
     }()
     
+    private let titleRatingStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.distribution = .equalSpacing
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
+    private let imageDescriptionStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 16
+        stack.alignment = .top
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     let searchBar: UISearchBar = {
         let bar = UISearchBar()
         bar.placeholder = "Search for a movie..."
@@ -25,23 +43,37 @@ final class MovieDetailView: UIView {
     
     private let movieNameLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 22)
-        label.numberOfLines = 2
+        label.font = .systemFont(ofSize: 28, weight: .heavy)
+        label.numberOfLines = 0
         label.textColor = .label
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private let movieRatingLabel: UILabel = {
+    private let ratingLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .bold)
-        label.textColor = .white
-        label.textAlignment = .center
-        label.layer.cornerRadius = 12
-        label.clipsToBounds = true
+        label.font = .systemFont(ofSize: 32, weight: .bold) // Bold and Large
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+    }()
+    
+    private let starImageView: UIImageView = {
+        let imageView = UIImageView()
+        let config = UIImage.SymbolConfiguration(pointSize: 28, weight: .bold)
+        imageView.image = UIImage(systemName: "star.fill", withConfiguration: config)
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private let ratingStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 4
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
     private let genreStackView: UIStackView = {
@@ -52,6 +84,13 @@ final class MovieDetailView: UIView {
         stack.distribution = .equalSpacing
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
+    }()
+    
+    private let genreScrollView: UIScrollView = {
+        let scroll = UIScrollView()
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        return scroll
     }()
     
     private let movieImageView: UIImageView = {
@@ -66,7 +105,7 @@ final class MovieDetailView: UIView {
     
     private let movieDescriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 15)
+        label.font = .systemFont(ofSize: 16, weight: .regular)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
@@ -99,22 +138,32 @@ final class MovieDetailView: UIView {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
         
-        contentView.addSubview(movieImageView)
-        contentView.addSubview(movieNameLabel)
-        contentView.addSubview(movieRatingLabel)
-        contentView.addSubview(movieDescriptionLabel)
+        ratingStack.addArrangedSubview(ratingLabel)
+        ratingStack.addArrangedSubview(starImageView)
+        
+        titleRatingStack.addArrangedSubview(movieNameLabel)
+        titleRatingStack.addArrangedSubview(ratingStack)
+        
+        imageDescriptionStack.addArrangedSubview(movieImageView)
+        imageDescriptionStack.addArrangedSubview(movieDescriptionLabel)
+        
+        contentView.addSubview(titleRatingStack)
+        contentView.addSubview(imageDescriptionStack)
         contentView.addSubview(genreStackView)
+        contentView.addSubview(genreScrollView)
+        
+        genreScrollView.addSubview(genreStackView)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             // Search bar
-            searchBar.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor),
+            searchBar.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
+            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             
             // Scroll view
-            scrollView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 10),
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -126,35 +175,34 @@ final class MovieDetailView: UIView {
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
             
-            // Movie image
-            movieImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            movieImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.8),
-            movieImageView.heightAnchor.constraint(equalTo: movieImageView.widthAnchor, multiplier: 1.5),
-            movieImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            
-            // Movie name
-            movieNameLabel.topAnchor.constraint(equalTo: movieImageView.bottomAnchor, constant: 16),
-            movieNameLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            movieNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            movieNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            
-            // Rating
-            movieRatingLabel.topAnchor.constraint(equalTo: movieNameLabel.bottomAnchor, constant: 12),
-            movieRatingLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            movieRatingLabel.heightAnchor.constraint(equalToConstant: 24),
-            movieRatingLabel.widthAnchor.constraint(equalToConstant: 80),
+            // Title & Rating Stack
+            starImageView.widthAnchor.constraint(equalToConstant: 30),
+            starImageView.heightAnchor.constraint(equalToConstant: 30),
+            titleRatingStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            titleRatingStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            titleRatingStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
             // Genre
-            genreStackView.topAnchor.constraint(equalTo: movieRatingLabel.bottomAnchor, constant: 12),
-            genreStackView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            genreStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            genreStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            genreScrollView.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 12),
+            genreScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            genreScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            genreScrollView.heightAnchor.constraint(equalToConstant: 32),
             
-            // Description
-            movieDescriptionLabel.topAnchor.constraint(equalTo: genreStackView.bottomAnchor, constant: 16),
-            movieDescriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            movieDescriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            movieDescriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            genreStackView.topAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.topAnchor),
+            genreStackView.leadingAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.leadingAnchor),
+            genreStackView.trailingAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.trailingAnchor),
+            genreStackView.bottomAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.bottomAnchor),
+            genreStackView.heightAnchor.constraint(equalTo: genreScrollView.frameLayoutGuide.heightAnchor),
+            
+            // Image & Description Stack
+            imageDescriptionStack.topAnchor.constraint(equalTo: genreStackView.bottomAnchor, constant: 24),
+            imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            
+            // Poster Image sizing inside the stack
+            movieImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
+            movieImageView.heightAnchor.constraint(equalTo: movieImageView.widthAnchor, multiplier: 1.4)
         ])
     }
     
@@ -168,11 +216,11 @@ final class MovieDetailView: UIView {
     private func createGenrePill(with name: String) -> UILabel {
         let label = UILabel()
         label.text = name
-        label.font = .systemFont(ofSize: 12, weight: .bold)
-        label.textColor = .white
-        label.backgroundColor = .systemGray.withAlphaComponent(0.8)
+        label.font = .systemFont(ofSize: 14, weight: .bold)
+        label.textColor = .darkGray
+        label.backgroundColor = UIColor.systemGray6
         label.textAlignment = .center
-        label.layer.cornerRadius = 12
+        label.layer.cornerRadius = 10
         label.clipsToBounds = true
         return label
     }
@@ -181,8 +229,9 @@ final class MovieDetailView: UIView {
     func update(with model: MovieDisplayModel) {
         movieNameLabel.text = model.title
         movieDescriptionLabel.text = model.overview
-        movieRatingLabel.text = model.ratingText
-        movieRatingLabel.backgroundColor = model.ratingColor
+        ratingLabel.text = model.ratingText
+        ratingLabel.textColor = model.ratingColor
+        starImageView.tintColor = model.ratingColor
         movieImageView.image = model.image
         genreStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
@@ -200,7 +249,7 @@ final class MovieDetailView: UIView {
     func clear() {
         movieNameLabel.text = nil
         movieDescriptionLabel.text = nil
-        movieRatingLabel.text = nil
+        ratingLabel.text = nil
         movieImageView.image = nil
     }
 }

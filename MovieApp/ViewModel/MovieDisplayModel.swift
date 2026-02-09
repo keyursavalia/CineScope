@@ -8,7 +8,7 @@ struct MovieDisplayModel {
     let genres: [String]
     
     var ratingText: String {
-        String(format: "%.1f ⭐️", rating)
+        String(format: "%.1f", rating)
     }
     
     var ratingColor: UIColor {
