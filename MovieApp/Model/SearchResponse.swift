@@ -1,12 +1,13 @@
 import Foundation
 
-// outer
+// MARK: - Search Multi Response
 struct SearchResponse: Codable {
     let results: [MediaItem]
 }
 
-// inner
+// MARK: - Media Item (polymorphic search result)
 struct MediaItem: Codable {
+    let id: Int?
     let title: String?
     let name: String?
     let mediaType: String?
@@ -17,6 +18,19 @@ struct MediaItem: Codable {
     let genreIds: [Int]?
     let knownForDepartment: String?
     
+    enum CodingKeys: String, CodingKey {
+        case id, title, overview, name
+        case mediaType = "media_type"
+        case posterPath = "poster_path"
+        case profilePath = "profile_path"
+        case voteAverage = "vote_average"
+        case genreIds = "genre_ids"
+        case knownForDepartment = "known_for_department"
+    }
+}
+
+// MARK: - MediaItem Computed Properties
+extension MediaItem {
     var displayName: String? {
         return title ?? name ?? "Unknown"
     }
@@ -30,28 +44,9 @@ struct MediaItem: Codable {
         return URL(string: "https://image.tmdb.org/t/p/w500\(path)")
     }
     
-    enum CodingKeys: String, CodingKey {
-        case title, overview, name
-        case mediaType = "media_type"
-        case posterPath = "poster_path"
-        case profilePath = "profile_path"
-        case voteAverage = "vote_average"
-        case genreIds = "genre_ids"
-        case knownForDepartment = "known_for_department"
-    }
-    
     func genreNames(using dictionary: [Int: String]) -> [String] {
         guard let genreIds = genreIds else { return [] }
         let names = genreIds.compactMap { dictionary[$0] }
         return names.isEmpty ? ["Unknown Genre"] : names
     }
-}
-
-struct GenreResponse: Codable {
-    let genres: [Genre]
-}
-
-struct Genre: Codable {
-    let id: Int
-    let name: String
 }

@@ -105,7 +105,19 @@ extension SearchResultsViewController: UITableViewDataSource, UITableViewDelegat
         tableView.deselectRow(at: indexPath, animated: true)
         searchBarView.resignSearchBar()
         let selectedItem = searchResults[indexPath.row]
-        let detailVC = MediaDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+        
+        let detailVC: UIViewController
+        switch selectedItem.mediaType {
+        case "movie":
+            detailVC = MovieDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+        case "tv":
+            detailVC = SeriesDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+        case "person":
+            detailVC = PersonDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+        default:
+            detailVC = MediaDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+        }
+        
         navigationController?.pushViewController(detailVC, animated: true)
     }
 }
