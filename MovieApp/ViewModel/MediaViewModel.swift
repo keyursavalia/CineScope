@@ -4,7 +4,6 @@ import UIKit
 @MainActor
 final class MediaViewModel {
     // Callback closures for UI updates
-    var onMediaUpdated: ((MediaDisplayModel) -> Void)?
     var onError: ((String) -> Void)?
     var onLoadingChanged: ((Bool) -> Void)?
     var onSearchResultsUpdated: (([MediaItem]) -> Void)?
@@ -54,49 +53,6 @@ final class MediaViewModel {
                 self.onError?("Error: \(error.localizedDescription)")
             }
         }
-    }
-    
-    func buildDisplayModel(for item: MediaItem) async -> MediaDisplayModel {
-        let title = item.title ?? item.name ?? "Unknown"
-        let rating = item.voteAverage ?? 0.0
-        let isPerson = item.knownForDepartment != nil
-        
-        // Define overview
-        var overview: String
-        if isPerson, let personId = item.id {
-            do {
-                let personDetail = try await mediaService.fetchPersonDetail(id: personId)
-                overview = personDetail.biography ?? "No Biography Available"
-            } catch {
-                overview = "Could not load biography"
-            }
-        } else {
-            overview = item.overview ?? "Sorry! We could not find the words to describe this media item."
-        }
-        
-        // Define genres
-        var genres: [String]
-        if item.mediaType == "person" {
-            genres = [item.knownForDepartment ?? "Unknown"]
-        } else {
-            genres = item.genreNames(using: GenreManager.shared.genres)
-        }
-        
-        // Load the poster image
-        var image: UIImage? = nil
-        if let posterPath = item.displayImagePath,
-           let url = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)") {
-            image = try? await imageService.loadImage(from: url)
-        }
-        
-        return MediaDisplayModel(
-            title: title,
-            overview: overview,
-            rating: rating,
-            image: image,
-            genres: genres,
-            isPerson: isPerson
-        )
     }
     
     func buildMovieDisplayModel(for item: MediaItem) async -> MovieDisplayModel {

@@ -115,7 +115,7 @@ extension SearchResultsViewController: UITableViewDataSource, UITableViewDelegat
         case "person":
             detailVC = PersonDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
         default:
-            detailVC = MediaDetailViewController(mediaItem: selectedItem, viewModel: viewModel)
+            return
         }
         
         navigationController?.pushViewController(detailVC, animated: true)
