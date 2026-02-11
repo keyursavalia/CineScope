@@ -15,15 +15,6 @@ final class PersonDetailView: UIView {
         return view
     }()
     
-    private let imageDescriptionStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 16
-        stack.alignment = .top
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
     private let personNameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 28, weight: .heavy)
@@ -72,14 +63,22 @@ final class PersonDetailView: UIView {
         image.contentMode = .scaleAspectFill
         image.clipsToBounds = true
         image.backgroundColor = .systemGray5
-        image.layer.cornerRadius = 8
+        image.layer.cornerRadius = 12
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
     
+    private let biographyContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.secondarySystemBackground
+        view.layer.cornerRadius = 10
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let biographyLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
@@ -111,15 +110,15 @@ final class PersonDetailView: UIView {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
         
-        imageDescriptionStack.addArrangedSubview(profileImageView)
-        imageDescriptionStack.addArrangedSubview(biographyLabel)
+        biographyContainerView.addSubview(biographyLabel)
         
         contentView.addSubview(personNameLabel)
         contentView.addSubview(departmentLabel)
         contentView.addSubview(birthInfoLabel)
         contentView.addSubview(ageLabel)
         contentView.addSubview(deathdayLabel)
-        contentView.addSubview(imageDescriptionStack)
+        contentView.addSubview(profileImageView)
+        contentView.addSubview(biographyContainerView)
     }
     
     private func setupConstraints() {
@@ -162,15 +161,23 @@ final class PersonDetailView: UIView {
             deathdayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             deathdayLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Image & Biography
-            imageDescriptionStack.topAnchor.constraint(equalTo: deathdayLabel.bottomAnchor, constant: 20),
-            imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            // Profile image — full width
+            profileImageView.topAnchor.constraint(equalTo: deathdayLabel.bottomAnchor, constant: 20),
+            profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            profileImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor, multiplier: 1.2),
             
-            // Profile image sizing
-            profileImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.4),
-            profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor, multiplier: 1.4)
+            // Biography container below image
+            biographyContainerView.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
+            biographyContainerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            biographyContainerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            biographyContainerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            
+            // Biography label inside container
+            biographyLabel.topAnchor.constraint(equalTo: biographyContainerView.topAnchor, constant: 12),
+            biographyLabel.leadingAnchor.constraint(equalTo: biographyContainerView.leadingAnchor, constant: 12),
+            biographyLabel.trailingAnchor.constraint(equalTo: biographyContainerView.trailingAnchor, constant: -12),
+            biographyLabel.bottomAnchor.constraint(equalTo: biographyContainerView.bottomAnchor, constant: -12)
         ])
     }
     
