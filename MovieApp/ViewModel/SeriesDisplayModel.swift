@@ -11,6 +11,4 @@ struct SeriesDisplayModel {
     let status: String?
     let yearRange: String?
     let seasonEpisodeText: String?
-    let networkName: String?
-    let creatorNames: String?
 }

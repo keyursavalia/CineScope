@@ -70,10 +70,10 @@ final class MovieDetailView: UIView {
     
     private let taglineLabel: UILabel = {
         let label = UILabel()
-        label.font = .italicSystemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
+        label.font = .italicSystemFont(ofSize: 17)
+        label.textColor = .systemOrange
         label.numberOfLines = 0
-        label.textAlignment = .left
+        label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -113,9 +113,17 @@ final class MovieDetailView: UIView {
         return image
     }()
     
+    private let descriptionContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.secondarySystemBackground
+        view.layer.cornerRadius = 10
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let movieDescriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
@@ -153,13 +161,16 @@ final class MovieDetailView: UIView {
         titleRatingStack.addArrangedSubview(movieNameLabel)
         titleRatingStack.addArrangedSubview(ratingStack)
         
+        // Description label inside container
+        descriptionContainerView.addSubview(movieDescriptionLabel)
+        
         imageDescriptionStack.addArrangedSubview(movieImageView)
-        imageDescriptionStack.addArrangedSubview(movieDescriptionLabel)
+        imageDescriptionStack.addArrangedSubview(descriptionContainerView)
         
         contentView.addSubview(titleRatingStack)
-        contentView.addSubview(taglineLabel)
-        contentView.addSubview(metadataLabel)
         contentView.addSubview(genreScrollView)
+        contentView.addSubview(metadataLabel)
+        contentView.addSubview(taglineLabel)
         contentView.addSubview(imageDescriptionStack)
         
         genreScrollView.addSubview(genreStackView)
@@ -180,25 +191,15 @@ final class MovieDetailView: UIView {
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
             
-            // Title & Rating Stack
+            // 1. Title & Rating Stack
             starImageView.widthAnchor.constraint(equalToConstant: 30),
             starImageView.heightAnchor.constraint(equalToConstant: 30),
             titleRatingStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             titleRatingStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             titleRatingStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Tagline
-            taglineLabel.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 8),
-            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Metadata (runtime · release date)
-            metadataLabel.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 8),
-            metadataLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            metadataLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Genre
-            genreScrollView.topAnchor.constraint(equalTo: metadataLabel.bottomAnchor, constant: 12),
+            // 2. Genre (right below title)
+            genreScrollView.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 12),
             genreScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             genreScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             genreScrollView.heightAnchor.constraint(equalToConstant: 32),
@@ -209,15 +210,31 @@ final class MovieDetailView: UIView {
             genreStackView.bottomAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.bottomAnchor),
             genreStackView.heightAnchor.constraint(equalTo: genreScrollView.frameLayoutGuide.heightAnchor),
             
-            // Image & Description Stack
-            imageDescriptionStack.topAnchor.constraint(equalTo: genreScrollView.bottomAnchor, constant: 24),
+            // 3. Metadata (runtime · release date) below genres
+            metadataLabel.topAnchor.constraint(equalTo: genreScrollView.bottomAnchor, constant: 10),
+            metadataLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            metadataLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            // 4. Tagline (centered, styled) below metadata
+            taglineLabel.topAnchor.constraint(equalTo: metadataLabel.bottomAnchor, constant: 14),
+            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            // 5. Image & Description Stack below tagline
+            imageDescriptionStack.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 20),
             imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             
-            // Poster Image sizing inside the stack
-            movieImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
-            movieImageView.heightAnchor.constraint(equalTo: movieImageView.widthAnchor, multiplier: 1.4)
+            // Poster Image sizing (smaller)
+            movieImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.38),
+            movieImageView.heightAnchor.constraint(equalTo: movieImageView.widthAnchor, multiplier: 1.4),
+            
+            // Description label inside container
+            movieDescriptionLabel.topAnchor.constraint(equalTo: descriptionContainerView.topAnchor, constant: 10),
+            movieDescriptionLabel.leadingAnchor.constraint(equalTo: descriptionContainerView.leadingAnchor, constant: 10),
+            movieDescriptionLabel.trailingAnchor.constraint(equalTo: descriptionContainerView.trailingAnchor, constant: -10),
+            movieDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10)
         ])
     }
     

@@ -70,10 +70,10 @@ final class SeriesDetailView: UIView {
     
     private let taglineLabel: UILabel = {
         let label = UILabel()
-        label.font = .italicSystemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
+        label.font = .italicSystemFont(ofSize: 17)
+        label.textColor = .systemOrange
         label.numberOfLines = 0
-        label.textAlignment = .left
+        label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -92,16 +92,6 @@ final class SeriesDetailView: UIView {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .medium)
         label.textColor = .tertiaryLabel
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    /// Network · Creators  (e.g. "HBO · David Benioff, D.B. Weiss")
-    private let networkCreatorLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .tertiaryLabel
-        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -133,9 +123,17 @@ final class SeriesDetailView: UIView {
         return image
     }()
     
+    private let descriptionContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.secondarySystemBackground
+        view.layer.cornerRadius = 10
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let showDescriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = .secondaryLabel
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
@@ -173,15 +171,17 @@ final class SeriesDetailView: UIView {
         titleRatingStack.addArrangedSubview(showNameLabel)
         titleRatingStack.addArrangedSubview(ratingStack)
         
+        // Description label inside container
+        descriptionContainerView.addSubview(showDescriptionLabel)
+        
         imageDescriptionStack.addArrangedSubview(showImageView)
-        imageDescriptionStack.addArrangedSubview(showDescriptionLabel)
+        imageDescriptionStack.addArrangedSubview(descriptionContainerView)
         
         contentView.addSubview(titleRatingStack)
-        contentView.addSubview(taglineLabel)
+        contentView.addSubview(genreScrollView)
         contentView.addSubview(statusLabel)
         contentView.addSubview(seasonEpisodeLabel)
-        contentView.addSubview(networkCreatorLabel)
-        contentView.addSubview(genreScrollView)
+        contentView.addSubview(taglineLabel)
         contentView.addSubview(imageDescriptionStack)
         
         genreScrollView.addSubview(genreStackView)
@@ -202,35 +202,15 @@ final class SeriesDetailView: UIView {
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
             
-            // Title & Rating
+            // 1. Title & Rating
             starImageView.widthAnchor.constraint(equalToConstant: 30),
             starImageView.heightAnchor.constraint(equalToConstant: 30),
             titleRatingStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             titleRatingStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             titleRatingStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Tagline
-            taglineLabel.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 8),
-            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Status · Year range
-            statusLabel.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 8),
-            statusLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            statusLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Seasons · Episodes
-            seasonEpisodeLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 4),
-            seasonEpisodeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            seasonEpisodeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Network · Creators
-            networkCreatorLabel.topAnchor.constraint(equalTo: seasonEpisodeLabel.bottomAnchor, constant: 4),
-            networkCreatorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            networkCreatorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // Genre
-            genreScrollView.topAnchor.constraint(equalTo: networkCreatorLabel.bottomAnchor, constant: 12),
+            // 2. Genre (right below title)
+            genreScrollView.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 12),
             genreScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             genreScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             genreScrollView.heightAnchor.constraint(equalToConstant: 32),
@@ -241,15 +221,36 @@ final class SeriesDetailView: UIView {
             genreStackView.bottomAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.bottomAnchor),
             genreStackView.heightAnchor.constraint(equalTo: genreScrollView.frameLayoutGuide.heightAnchor),
             
-            // Image & Description
-            imageDescriptionStack.topAnchor.constraint(equalTo: genreScrollView.bottomAnchor, constant: 24),
+            // 3. Status · Year range (below genres)
+            statusLabel.topAnchor.constraint(equalTo: genreScrollView.bottomAnchor, constant: 10),
+            statusLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            statusLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            // Seasons · Episodes
+            seasonEpisodeLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 4),
+            seasonEpisodeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            seasonEpisodeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            // 4. Tagline (centered, styled) below metadata
+            taglineLabel.topAnchor.constraint(equalTo: seasonEpisodeLabel.bottomAnchor, constant: 14),
+            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            // 5. Image & Description below tagline
+            imageDescriptionStack.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 20),
             imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             
-            // Poster sizing
-            showImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
-            showImageView.heightAnchor.constraint(equalTo: showImageView.widthAnchor, multiplier: 1.4)
+            // Poster sizing (smaller)
+            showImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.38),
+            showImageView.heightAnchor.constraint(equalTo: showImageView.widthAnchor, multiplier: 1.4),
+            
+            // Description label inside container
+            showDescriptionLabel.topAnchor.constraint(equalTo: descriptionContainerView.topAnchor, constant: 10),
+            showDescriptionLabel.leadingAnchor.constraint(equalTo: descriptionContainerView.leadingAnchor, constant: 10),
+            showDescriptionLabel.trailingAnchor.constraint(equalTo: descriptionContainerView.trailingAnchor, constant: -10),
+            showDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10)
         ])
     }
     
@@ -291,11 +292,6 @@ final class SeriesDetailView: UIView {
         seasonEpisodeLabel.text = model.seasonEpisodeText
         seasonEpisodeLabel.isHidden = (model.seasonEpisodeText == nil)
         
-        // Network · Creators
-        let networkCreatorParts = [model.networkName, model.creatorNames].compactMap { $0 }
-        networkCreatorLabel.text = networkCreatorParts.joined(separator: " · ")
-        networkCreatorLabel.isHidden = networkCreatorParts.isEmpty
-        
         // Tagline
         taglineLabel.isHidden = (model.tagline == nil || model.tagline?.isEmpty == true)
         
@@ -314,7 +310,6 @@ final class SeriesDetailView: UIView {
         taglineLabel.text = nil
         statusLabel.text = nil
         seasonEpisodeLabel.text = nil
-        networkCreatorLabel.text = nil
         showDescriptionLabel.text = nil
         ratingLabel.text = nil
         showImageView.image = nil

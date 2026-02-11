@@ -13,17 +13,14 @@ struct SeriesDetail: Codable {
     let lastAirDate: String?
     let inProduction: Bool?
     let genres: [Genre]?
-    let networks: [Network]?
-    let createdBy: [Creator]?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, overview, tagline, status, genres, networks
+        case id, name, overview, tagline, status, genres
         case numberOfSeasons = "number_of_seasons"
         case numberOfEpisodes = "number_of_episodes"
         case firstAirDate = "first_air_date"
         case lastAirDate = "last_air_date"
         case inProduction = "in_production"
-        case createdBy = "created_by"
     }
 }
 
@@ -65,18 +62,6 @@ extension SeriesDetail {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
     
-    /// "Created by David Benioff, D.B. Weiss"
-    var creatorNames: String? {
-        guard let creators = createdBy, !creators.isEmpty else { return nil }
-        return creators.map { $0.name }.joined(separator: ", ")
-    }
-    
-    /// "HBO"
-    var networkNames: String? {
-        guard let networks = networks, !networks.isEmpty else { return nil }
-        return networks.map { $0.name }.joined(separator: ", ")
-    }
-    
     private static func formatDate(_ dateString: String) -> String? {
         let inputFormatter = DateFormatter()
         inputFormatter.dateFormat = "yyyy-MM-dd"
@@ -85,27 +70,5 @@ extension SeriesDetail {
         outputFormatter.dateStyle = .long
         outputFormatter.timeStyle = .none
         return outputFormatter.string(from: date)
-    }
-}
-
-// MARK: - Network
-struct Network: Codable {
-    let id: Int
-    let name: String
-    let logoPath: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case id, name
-        case logoPath = "logo_path"
-    }
-}
-
-// MARK: - Creator
-struct Creator: Codable {
-    let id: Int
-    let name: String
-    
-    enum CodingKeys: String, CodingKey {
-        case id, name
     }
 }

@@ -135,9 +135,7 @@ final class MediaViewModel {
             image: image,
             status: tvDetail?.status,
             yearRange: tvDetail?.yearRange,
-            seasonEpisodeText: tvDetail?.seasonEpisodeText,
-            networkName: tvDetail?.networkNames,
-            creatorNames: tvDetail?.creatorNames
+            seasonEpisodeText: tvDetail?.seasonEpisodeText
         )
     }
     
