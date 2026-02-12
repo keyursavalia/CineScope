@@ -6,6 +6,11 @@ final class PersonDetailViewController: UIViewController {
     private let mediaItem: MediaItem
     private let viewModel: MediaViewModel
     
+    private var searchBarTopConstraint: NSLayoutConstraint!
+    private var lastScrollOffset: CGFloat = 0
+    private let searchBarHeight: CGFloat = 56
+    private var isSearchBarVisible = true
+    
     init(mediaItem: MediaItem, viewModel: MediaViewModel) {
         self.mediaItem = mediaItem
         self.viewModel = viewModel
@@ -25,16 +30,20 @@ final class PersonDetailViewController: UIViewController {
     
     private func setupView() {
         view.backgroundColor = .systemBackground
-        view.addSubview(searchBarView)
         view.addSubview(personDetailView)
+        view.addSubview(searchBarView)
         personDetailView.translatesAutoresizingMaskIntoConstraints = false
         
         searchBarView.delegate = self
+        personDetailView.internalScrollView.delegate = self
+        
+        searchBarTopConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         
         NSLayoutConstraint.activate([
-            searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBarTopConstraint,
             searchBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            searchBarView.heightAnchor.constraint(equalToConstant: searchBarHeight),
             
             personDetailView.topAnchor.constraint(equalTo: searchBarView.bottomAnchor),
             personDetailView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -47,6 +56,24 @@ final class PersonDetailViewController: UIViewController {
         Task {
             let model = await viewModel.buildPersonDisplayModel(for: mediaItem)
             personDetailView.update(with: model)
+            title = model.name
+        }
+    }
+    
+    private func setSearchBarHidden(_ hidden: Bool, animated: Bool) {
+        guard hidden != !isSearchBarVisible else { return }
+        isSearchBarVisible = !hidden
+        
+        let offset: CGFloat = hidden ? -(searchBarHeight + view.safeAreaInsets.top) : 0
+        searchBarTopConstraint.constant = offset
+        
+        if animated {
+            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .allowUserInteraction]) {
+                self.view.layoutIfNeeded()
+                self.searchBarView.alpha = hidden ? 0 : 1
+            }
+        } else {
+            searchBarView.alpha = hidden ? 0 : 1
         }
     }
 }
@@ -58,5 +85,23 @@ extension PersonDetailViewController: SearchBarViewDelegate {
         if let searchVC = navigationController?.topViewController as? SearchResultsViewController {
             searchVC.performSearch(query: query)
         }
+    }
+}
+
+// MARK: - UIScrollViewDelegate (scroll-to-hide search bar)
+extension PersonDetailViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let currentOffset = scrollView.contentOffset.y
+        let delta = currentOffset - lastScrollOffset
+        
+        if currentOffset <= 0 {
+            setSearchBarHidden(false, animated: true)
+        } else if delta > 6 {
+            setSearchBarHidden(true, animated: true)
+        } else if delta < -6 {
+            setSearchBarHidden(false, animated: true)
+        }
+        
+        lastScrollOffset = currentOffset
     }
 }

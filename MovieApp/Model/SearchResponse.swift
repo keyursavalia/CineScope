@@ -17,6 +17,8 @@ struct MediaItem: Codable {
     let voteAverage: Float?
     let genreIds: [Int]?
     let knownForDepartment: String?
+    let releaseDate: String?
+    let firstAirDate: String?
     
     enum CodingKeys: String, CodingKey {
         case id, title, overview, name
@@ -26,6 +28,8 @@ struct MediaItem: Codable {
         case voteAverage = "vote_average"
         case genreIds = "genre_ids"
         case knownForDepartment = "known_for_department"
+        case releaseDate = "release_date"
+        case firstAirDate = "first_air_date"
     }
 }
 
@@ -42,6 +46,13 @@ extension MediaItem {
     var imageURL: URL? {
         guard let path = displayImagePath else { return nil }
         return URL(string: "https://image.tmdb.org/t/p/w500\(path)")
+    }
+    
+    /// Extracts the 4-digit year from releaseDate or firstAirDate, e.g. "2024"
+    var releaseYear: String? {
+        let dateString = releaseDate ?? firstAirDate
+        guard let dateString, dateString.count >= 4 else { return nil }
+        return String(dateString.prefix(4))
     }
     
     func genreNames(using dictionary: [Int: String]) -> [String] {

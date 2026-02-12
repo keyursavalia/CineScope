@@ -188,6 +188,9 @@ final class PersonDetailView: UIView {
         profileImageView.layer.shadowRadius = 8
     }
     
+    // MARK: - Public Interface
+    var internalScrollView: UIScrollView { scrollView }
+    
     // MARK: - Public Methods
     func update(with model: PersonDisplayModel) {
         personNameLabel.text = model.name

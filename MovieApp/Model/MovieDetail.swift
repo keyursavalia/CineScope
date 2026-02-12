@@ -5,13 +5,12 @@ struct MovieDetail: Codable {
     let id: Int
     let title: String
     let overview: String?
-    let tagline: String?
     let runtime: Int?
     let releaseDate: String?
     let genres: [Genre]?
     
     enum CodingKeys: String, CodingKey {
-        case id, title, overview, tagline, runtime, genres
+        case id, title, overview, runtime, genres
         case releaseDate = "release_date"
     }
 }

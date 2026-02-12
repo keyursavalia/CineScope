@@ -2,7 +2,6 @@ import UIKit
 
 struct SeriesDisplayModel {
     let title: String
-    let tagline: String?
     let overview: String
     let ratingText: String
     let ratingColor: UIColor

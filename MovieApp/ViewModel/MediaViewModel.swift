@@ -63,7 +63,6 @@ final class MediaViewModel {
         }
         
         let title = movieDetail?.title ?? item.title ?? "Unknown"
-        let tagline = movieDetail?.tagline
         let overview = movieDetail?.overview ?? item.overview ?? "No description available"
         let rating = item.voteAverage ?? 0.0
         
@@ -87,7 +86,6 @@ final class MediaViewModel {
         
         return MovieDisplayModel(
             title: title,
-            tagline: tagline,
             overview: overview,
             ratingText: ratingText,
             ratingColor: ratingColor,
@@ -105,7 +103,6 @@ final class MediaViewModel {
         }
         
         let title = tvDetail?.name ?? item.name ?? "Unknown"
-        let tagline = tvDetail?.tagline
         let overview = tvDetail?.overview ?? item.overview ?? "No description available"
         let rating = item.voteAverage ?? 0.0
         
@@ -127,7 +124,6 @@ final class MediaViewModel {
         
         return SeriesDisplayModel(
             title: title,
-            tagline: tagline,
             overview: overview,
             ratingText: ratingText,
             ratingColor: ratingColor,
@@ -137,6 +133,39 @@ final class MediaViewModel {
             yearRange: tvDetail?.yearRange,
             seasonEpisodeText: tvDetail?.seasonEpisodeText
         )
+    }
+    
+    func fetchCastDisplayItems(mediaType: String, id: Int) async -> [CastDisplayItem] {
+        let credits: CreditsResponse?
+        switch mediaType {
+        case "movie":
+            credits = try? await mediaService.fetchMovieCredits(id: id)
+        case "tv":
+            credits = try? await mediaService.fetchSeriesCredits(id: id)
+        default:
+            credits = nil
+        }
+        
+        guard let cast = credits?.cast, !cast.isEmpty else { return [] }
+        
+        // Take top 20 cast members
+        let topCast = Array(cast.prefix(20))
+        
+        var items: [CastDisplayItem] = []
+        for member in topCast {
+            var image: UIImage? = nil
+            if let profilePath = member.profilePath,
+               let url = URL(string: "https://image.tmdb.org/t/p/w185\(profilePath)") {
+                image = try? await imageService.loadImage(from: url)
+            }
+            items.append(CastDisplayItem(
+                id: member.id,
+                name: member.name,
+                character: member.character,
+                image: image
+            ))
+        }
+        return items
     }
     
     func buildPersonDisplayModel(for item: MediaItem) async -> PersonDisplayModel {
@@ -150,7 +179,8 @@ final class MediaViewModel {
         let knownFor = personDetail?.knownForDepartment ?? item.knownForDepartment
         
         var image: UIImage? = nil
-        if let profilePath = item.displayImagePath,
+        let profilePath = item.displayImagePath ?? personDetail?.profilePath
+        if let profilePath,
            let url = URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)") {
             image = try? await imageService.loadImage(from: url)
         }

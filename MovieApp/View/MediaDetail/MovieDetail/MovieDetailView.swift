@@ -1,6 +1,14 @@
 import UIKit
 
+protocol MovieDetailViewDelegate: AnyObject {
+    func movieDetailView(_ view: MovieDetailView, didSelectCastMemberWithId id: Int)
+}
+
 final class MovieDetailView: UIView {
+    
+    weak var delegate: MovieDetailViewDelegate?
+    
+    private var castItems: [CastDisplayItem] = []
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -68,16 +76,6 @@ final class MovieDetailView: UIView {
         return stack
     }()
     
-    private let taglineLabel: UILabel = {
-        let label = UILabel()
-        label.font = .italicSystemFont(ofSize: 17)
-        label.textColor = .systemOrange
-        label.numberOfLines = 0
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     private let metadataLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .medium)
@@ -132,6 +130,31 @@ final class MovieDetailView: UIView {
         return label
     }()
     
+    // MARK: - Cast Section
+    private let castTitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Cast"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let castCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 90, height: 140)
+        layout.minimumInteritemSpacing = 12
+        layout.minimumLineSpacing = 12
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.showsHorizontalScrollIndicator = false
+        cv.backgroundColor = .clear
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.register(CastCell.self, forCellWithReuseIdentifier: CastCell.reuseIdentifier)
+        return cv
+    }()
+    
     // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -149,6 +172,8 @@ final class MovieDetailView: UIView {
         addSubviews()
         setupConstraints()
         setupImageShadow()
+        castCollectionView.dataSource = self
+        castCollectionView.delegate = self
     }
     
     private func addSubviews() {
@@ -161,7 +186,6 @@ final class MovieDetailView: UIView {
         titleRatingStack.addArrangedSubview(movieNameLabel)
         titleRatingStack.addArrangedSubview(ratingStack)
         
-        // Description label inside container
         descriptionContainerView.addSubview(movieDescriptionLabel)
         
         imageDescriptionStack.addArrangedSubview(movieImageView)
@@ -170,8 +194,9 @@ final class MovieDetailView: UIView {
         contentView.addSubview(titleRatingStack)
         contentView.addSubview(genreScrollView)
         contentView.addSubview(metadataLabel)
-        contentView.addSubview(taglineLabel)
         contentView.addSubview(imageDescriptionStack)
+        contentView.addSubview(castTitleLabel)
+        contentView.addSubview(castCollectionView)
         
         genreScrollView.addSubview(genreStackView)
     }
@@ -215,18 +240,12 @@ final class MovieDetailView: UIView {
             metadataLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             metadataLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // 4. Tagline (centered, styled) below metadata
-            taglineLabel.topAnchor.constraint(equalTo: metadataLabel.bottomAnchor, constant: 14),
-            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // 5. Image & Description Stack below tagline
-            imageDescriptionStack.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 20),
+            // 4. Image & Description Stack below metadata
+            imageDescriptionStack.topAnchor.constraint(equalTo: metadataLabel.bottomAnchor, constant: 16),
             imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             
-            // Poster Image sizing (smaller)
+            // Poster Image sizing
             movieImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.38),
             movieImageView.heightAnchor.constraint(equalTo: movieImageView.widthAnchor, multiplier: 1.4),
             
@@ -234,7 +253,18 @@ final class MovieDetailView: UIView {
             movieDescriptionLabel.topAnchor.constraint(equalTo: descriptionContainerView.topAnchor, constant: 10),
             movieDescriptionLabel.leadingAnchor.constraint(equalTo: descriptionContainerView.leadingAnchor, constant: 10),
             movieDescriptionLabel.trailingAnchor.constraint(equalTo: descriptionContainerView.trailingAnchor, constant: -10),
-            movieDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10)
+            movieDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10),
+            
+            // 5. Cast section
+            castTitleLabel.topAnchor.constraint(equalTo: imageDescriptionStack.bottomAnchor, constant: 24),
+            castTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            castTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            castCollectionView.topAnchor.constraint(equalTo: castTitleLabel.bottomAnchor, constant: 12),
+            castCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            castCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            castCollectionView.heightAnchor.constraint(equalToConstant: 150),
+            castCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
     
@@ -257,10 +287,12 @@ final class MovieDetailView: UIView {
         return label
     }
     
+    // MARK: - Public Interface
+    var internalScrollView: UIScrollView { scrollView }
+    
     // MARK: - Public Methods
     func update(with model: MovieDisplayModel) {
         movieNameLabel.text = model.title
-        taglineLabel.text = model.tagline
         movieDescriptionLabel.text = model.overview
         ratingLabel.text = model.ratingText
         ratingLabel.textColor = model.ratingColor
@@ -270,11 +302,6 @@ final class MovieDetailView: UIView {
         // Runtime and release date on one line
         let metadataParts = [model.formattedRuntime, model.formattedReleaseDate].compactMap { $0 }
         metadataLabel.text = metadataParts.joined(separator: " · ")
-        
-        // Hide tagline label if empty
-        taglineLabel.isHidden = (model.tagline == nil || model.tagline?.isEmpty == true)
-        
-        // Hide metadata label if empty
         metadataLabel.isHidden = metadataParts.isEmpty
         
         // Genres
@@ -287,12 +314,40 @@ final class MovieDetailView: UIView {
         }
     }
     
+    func updateCast(with items: [CastDisplayItem]) {
+        castItems = items
+        castTitleLabel.isHidden = items.isEmpty
+        castCollectionView.isHidden = items.isEmpty
+        castCollectionView.reloadData()
+    }
+    
     func clear() {
         movieNameLabel.text = nil
-        taglineLabel.text = nil
         metadataLabel.text = nil
         movieDescriptionLabel.text = nil
         ratingLabel.text = nil
         movieImageView.image = nil
+        castItems = []
+        castCollectionView.reloadData()
+    }
+}
+
+// MARK: - Cast CollectionView
+extension MovieDetailView: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return castItems.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CastCell.reuseIdentifier, for: indexPath) as? CastCell else {
+            return UICollectionViewCell()
+        }
+        cell.configure(with: castItems[indexPath.item])
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let item = castItems[indexPath.item]
+        delegate?.movieDetailView(self, didSelectCastMemberWithId: item.id)
     }
 }

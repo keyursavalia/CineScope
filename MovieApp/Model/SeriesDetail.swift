@@ -5,7 +5,6 @@ struct SeriesDetail: Codable {
     let id: Int
     let name: String
     let overview: String?
-    let tagline: String?
     let status: String?
     let numberOfSeasons: Int?
     let numberOfEpisodes: Int?
@@ -15,7 +14,7 @@ struct SeriesDetail: Codable {
     let genres: [Genre]?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, overview, tagline, status, genres
+        case id, name, overview, status, genres
         case numberOfSeasons = "number_of_seasons"
         case numberOfEpisodes = "number_of_episodes"
         case firstAirDate = "first_air_date"

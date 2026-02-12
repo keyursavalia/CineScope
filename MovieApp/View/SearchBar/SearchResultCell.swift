@@ -25,7 +25,7 @@ final class SearchResultCell: UITableViewCell {
         return label
     }()
 
-    private let mediaTypeLabel: UILabel = {
+    private let yearLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .secondaryLabel
@@ -38,15 +38,6 @@ final class SearchResultCell: UITableViewCell {
         label.font = .systemFont(ofSize: 14, weight: .regular)
         label.textColor = .secondaryLabel
         label.numberOfLines = 3
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    private let ratingLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .semibold)
-        label.textColor = .systemOrange
-        label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -64,9 +55,8 @@ final class SearchResultCell: UITableViewCell {
     private func setupUI() {
         contentView.addSubview(posterImageView)
         contentView.addSubview(titleLabel)
-        contentView.addSubview(mediaTypeLabel)
+        contentView.addSubview(yearLabel)
         contentView.addSubview(overviewLabel)
-        contentView.addSubview(ratingLabel)
         
         setupConstraints()
     }
@@ -80,23 +70,18 @@ final class SearchResultCell: UITableViewCell {
             posterImageView.widthAnchor.constraint(equalToConstant: 60),
             posterImageView.heightAnchor.constraint(equalToConstant: 90),
             
-            // Title -- top right of the image, with space for rating
+            // Title -- top right of the image, full width
             titleLabel.topAnchor.constraint(equalTo: posterImageView.topAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: posterImageView.trailingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: ratingLabel.leadingAnchor, constant: -8),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            // Rating -- top right corner
-            ratingLabel.topAnchor.constraint(equalTo: posterImageView.topAnchor),
-            ratingLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            ratingLabel.widthAnchor.constraint(equalToConstant: 40),
+            // Year -- below title
+            yearLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+            yearLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            yearLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            // Media type -- below title
-            mediaTypeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            mediaTypeLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            mediaTypeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            
-            // Overview -- below media type, fills remaining space
-            overviewLabel.topAnchor.constraint(equalTo: mediaTypeLabel.bottomAnchor, constant: 4),
+            // Overview -- below year, fills remaining space
+            overviewLabel.topAnchor.constraint(equalTo: yearLabel.bottomAnchor, constant: 4),
             overviewLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             overviewLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             overviewLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -12)
@@ -106,22 +91,8 @@ final class SearchResultCell: UITableViewCell {
     func configure(with item: MediaItem) {
         titleLabel.text = item.displayName
         overviewLabel.text = item.overview ?? "No description available"
-        
-        // Format media type nicely
-        if let mediaType = item.mediaType {
-            mediaTypeLabel.text = mediaType.capitalized  // "movie" → "Movie"
-        } else {
-            mediaTypeLabel.text = nil
-        }
-        
-        // Rating (hide for people)
-        if item.knownForDepartment != nil {
-            ratingLabel.text = nil
-        } else if let rating = item.voteAverage {
-            ratingLabel.text = String(format: "⭐ %.1f", rating)
-        } else {
-            ratingLabel.text = nil
-        }
+        yearLabel.text = item.releaseYear
+        yearLabel.isHidden = (item.releaseYear == nil)
     }
     
     func loadImage(from item: MediaItem, using imageService: ImageServiceProtocol) {
@@ -146,8 +117,7 @@ final class SearchResultCell: UITableViewCell {
         super.prepareForReuse()
         posterImageView.image = nil
         titleLabel.text = nil
-        mediaTypeLabel.text = nil
+        yearLabel.text = nil
         overviewLabel.text = nil
-        ratingLabel.text = nil
     }
 }

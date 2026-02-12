@@ -9,12 +9,14 @@ struct PersonDetail: Codable {
     let deathday: String?
     let placeOfBirth: String?
     let knownForDepartment: String?
+    let profilePath: String?
     let gender: Int?
     
     enum CodingKeys: String, CodingKey {
         case id, name, biography, birthday, deathday, gender
         case placeOfBirth = "place_of_birth"
         case knownForDepartment = "known_for_department"
+        case profilePath = "profile_path"
     }
 }
 

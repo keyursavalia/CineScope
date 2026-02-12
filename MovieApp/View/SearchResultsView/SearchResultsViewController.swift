@@ -8,6 +8,11 @@ final class SearchResultsViewController: UIViewController {
     private let imageService: ImageServiceProtocol = ImageService()
     private let viewModel: MediaViewModel
     
+    private var searchBarTopConstraint: NSLayoutConstraint!
+    private var lastScrollOffset: CGFloat = 0
+    private let searchBarHeight: CGFloat = 56
+    private var isSearchBarVisible = true
+    
     // Dependency injection for testability
     init(viewModel: MediaViewModel = MediaViewModel()) {
         self.viewModel = viewModel
@@ -28,8 +33,8 @@ final class SearchResultsViewController: UIViewController {
     private func setupView() {
         title = "CineScope"
         view.backgroundColor = .systemBackground
-        view.addSubview(searchBarView)
         view.addSubview(searchResultsView)
+        view.addSubview(searchBarView)
         searchResultsView.translatesAutoresizingMaskIntoConstraints = false
         
         searchBarView.delegate = self
@@ -37,12 +42,14 @@ final class SearchResultsViewController: UIViewController {
         searchResultsView.tableView.delegate = self
         searchResultsView.tableView.keyboardDismissMode = .onDrag
         
+        searchBarTopConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        
         NSLayoutConstraint.activate([
-            
             // Search Bar
-            searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBarTopConstraint,
             searchBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            searchBarView.heightAnchor.constraint(equalToConstant: searchBarHeight),
             
             // Search Results (TableView)
             searchResultsView.topAnchor.constraint(equalTo: searchBarView.bottomAnchor),
@@ -77,6 +84,23 @@ final class SearchResultsViewController: UIViewController {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+    
+    private func setSearchBarHidden(_ hidden: Bool, animated: Bool) {
+        guard hidden != !isSearchBarVisible else { return }
+        isSearchBarVisible = !hidden
+        
+        let offset: CGFloat = hidden ? -(searchBarHeight + view.safeAreaInsets.top) : 0
+        searchBarTopConstraint.constant = offset
+        
+        if animated {
+            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .allowUserInteraction]) {
+                self.view.layoutIfNeeded()
+                self.searchBarView.alpha = hidden ? 0 : 1
+            }
+        } else {
+            searchBarView.alpha = hidden ? 0 : 1
+        }
     }
 }
 
@@ -119,5 +143,21 @@ extension SearchResultsViewController: UITableViewDataSource, UITableViewDelegat
         }
         
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    // MARK: - Scroll-to-hide search bar
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let currentOffset = scrollView.contentOffset.y
+        let delta = currentOffset - lastScrollOffset
+        
+        if currentOffset <= 0 {
+            setSearchBarHidden(false, animated: true)
+        } else if delta > 6 {
+            setSearchBarHidden(true, animated: true)
+        } else if delta < -6 {
+            setSearchBarHidden(false, animated: true)
+        }
+        
+        lastScrollOffset = currentOffset
     }
 }

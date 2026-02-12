@@ -1,6 +1,14 @@
 import UIKit
 
+protocol SeriesDetailViewDelegate: AnyObject {
+    func seriesDetailView(_ view: SeriesDetailView, didSelectCastMemberWithId id: Int)
+}
+
 final class SeriesDetailView: UIView {
+    
+    weak var delegate: SeriesDetailViewDelegate?
+    
+    private var castItems: [CastDisplayItem] = []
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -68,16 +76,6 @@ final class SeriesDetailView: UIView {
         return stack
     }()
     
-    private let taglineLabel: UILabel = {
-        let label = UILabel()
-        label.font = .italicSystemFont(ofSize: 17)
-        label.textColor = .systemOrange
-        label.numberOfLines = 0
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     /// Status · Year range  (e.g. "Ended · 2011 – 2019")
     private let statusLabel: UILabel = {
         let label = UILabel()
@@ -142,6 +140,31 @@ final class SeriesDetailView: UIView {
         return label
     }()
     
+    // MARK: - Cast Section
+    private let castTitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Cast"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let castCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 90, height: 140)
+        layout.minimumInteritemSpacing = 12
+        layout.minimumLineSpacing = 12
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.showsHorizontalScrollIndicator = false
+        cv.backgroundColor = .clear
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.register(CastCell.self, forCellWithReuseIdentifier: CastCell.reuseIdentifier)
+        return cv
+    }()
+    
     // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -159,6 +182,8 @@ final class SeriesDetailView: UIView {
         addSubviews()
         setupConstraints()
         setupImageShadow()
+        castCollectionView.dataSource = self
+        castCollectionView.delegate = self
     }
     
     private func addSubviews() {
@@ -171,7 +196,6 @@ final class SeriesDetailView: UIView {
         titleRatingStack.addArrangedSubview(showNameLabel)
         titleRatingStack.addArrangedSubview(ratingStack)
         
-        // Description label inside container
         descriptionContainerView.addSubview(showDescriptionLabel)
         
         imageDescriptionStack.addArrangedSubview(showImageView)
@@ -181,8 +205,9 @@ final class SeriesDetailView: UIView {
         contentView.addSubview(genreScrollView)
         contentView.addSubview(statusLabel)
         contentView.addSubview(seasonEpisodeLabel)
-        contentView.addSubview(taglineLabel)
         contentView.addSubview(imageDescriptionStack)
+        contentView.addSubview(castTitleLabel)
+        contentView.addSubview(castCollectionView)
         
         genreScrollView.addSubview(genreStackView)
     }
@@ -231,18 +256,12 @@ final class SeriesDetailView: UIView {
             seasonEpisodeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             seasonEpisodeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // 4. Tagline (centered, styled) below metadata
-            taglineLabel.topAnchor.constraint(equalTo: seasonEpisodeLabel.bottomAnchor, constant: 14),
-            taglineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            taglineLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // 5. Image & Description below tagline
-            imageDescriptionStack.topAnchor.constraint(equalTo: taglineLabel.bottomAnchor, constant: 20),
+            // 4. Image & Description below metadata
+            imageDescriptionStack.topAnchor.constraint(equalTo: seasonEpisodeLabel.bottomAnchor, constant: 16),
             imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            imageDescriptionStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             
-            // Poster sizing (smaller)
+            // Poster sizing
             showImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.38),
             showImageView.heightAnchor.constraint(equalTo: showImageView.widthAnchor, multiplier: 1.4),
             
@@ -250,7 +269,18 @@ final class SeriesDetailView: UIView {
             showDescriptionLabel.topAnchor.constraint(equalTo: descriptionContainerView.topAnchor, constant: 10),
             showDescriptionLabel.leadingAnchor.constraint(equalTo: descriptionContainerView.leadingAnchor, constant: 10),
             showDescriptionLabel.trailingAnchor.constraint(equalTo: descriptionContainerView.trailingAnchor, constant: -10),
-            showDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10)
+            showDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10),
+            
+            // 5. Cast section
+            castTitleLabel.topAnchor.constraint(equalTo: imageDescriptionStack.bottomAnchor, constant: 24),
+            castTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            castTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            castCollectionView.topAnchor.constraint(equalTo: castTitleLabel.bottomAnchor, constant: 12),
+            castCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            castCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            castCollectionView.heightAnchor.constraint(equalToConstant: 150),
+            castCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
     
@@ -273,10 +303,12 @@ final class SeriesDetailView: UIView {
         return label
     }
     
+    // MARK: - Public Interface
+    var internalScrollView: UIScrollView { scrollView }
+    
     // MARK: - Public Methods
     func update(with model: SeriesDisplayModel) {
         showNameLabel.text = model.title
-        taglineLabel.text = model.tagline
         showDescriptionLabel.text = model.overview
         ratingLabel.text = model.ratingText
         ratingLabel.textColor = model.ratingColor
@@ -292,9 +324,6 @@ final class SeriesDetailView: UIView {
         seasonEpisodeLabel.text = model.seasonEpisodeText
         seasonEpisodeLabel.isHidden = (model.seasonEpisodeText == nil)
         
-        // Tagline
-        taglineLabel.isHidden = (model.tagline == nil || model.tagline?.isEmpty == true)
-        
         // Genres
         genreStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for genreName in model.genres {
@@ -305,13 +334,41 @@ final class SeriesDetailView: UIView {
         }
     }
     
+    func updateCast(with items: [CastDisplayItem]) {
+        castItems = items
+        castTitleLabel.isHidden = items.isEmpty
+        castCollectionView.isHidden = items.isEmpty
+        castCollectionView.reloadData()
+    }
+    
     func clear() {
         showNameLabel.text = nil
-        taglineLabel.text = nil
         statusLabel.text = nil
         seasonEpisodeLabel.text = nil
         showDescriptionLabel.text = nil
         ratingLabel.text = nil
         showImageView.image = nil
+        castItems = []
+        castCollectionView.reloadData()
+    }
+}
+
+// MARK: - Cast CollectionView
+extension SeriesDetailView: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return castItems.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CastCell.reuseIdentifier, for: indexPath) as? CastCell else {
+            return UICollectionViewCell()
+        }
+        cell.configure(with: castItems[indexPath.item])
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let item = castItems[indexPath.item]
+        delegate?.seriesDetailView(self, didSelectCastMemberWithId: item.id)
     }
 }
