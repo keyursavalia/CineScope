@@ -36,6 +36,7 @@ final class SeriesDetailViewController: UIViewController {
         
         searchBarView.delegate = self
         seriesDetailView.delegate = self
+        seriesDetailView.imageService = ImageService()
         seriesDetailView.internalScrollView.delegate = self
         
         searchBarTopConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
@@ -58,10 +59,13 @@ final class SeriesDetailViewController: UIViewController {
             let model = await viewModel.buildSeriesDisplayModel(for: mediaItem)
             seriesDetailView.update(with: model)
             
-            // Load cast
+            // Load cast and gallery
             if let seriesId = mediaItem.id {
                 let cast = await viewModel.fetchCastDisplayItems(mediaType: "tv", id: seriesId)
                 seriesDetailView.updateCast(with: cast)
+                
+                let gallery = await viewModel.fetchGalleryURLs(mediaType: "tv", id: seriesId)
+                seriesDetailView.updateGallery(with: gallery)
             }
         }
     }

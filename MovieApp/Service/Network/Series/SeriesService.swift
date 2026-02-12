@@ -40,4 +40,23 @@ extension MediaService {
         return try JSONDecoder().decode(CreditsResponse.self, from: data)
     }
     
+    func fetchSeriesImages(id: Int) async throws -> ImagesResponse {
+        guard let url = URL(string: "\(baseURL)/tv/\(id)/images") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(apiToken, forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "accept")
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+            throw NetworkError.invalidResponse
+        }
+        
+        return try JSONDecoder().decode(ImagesResponse.self, from: data)
+    }
+    
 }

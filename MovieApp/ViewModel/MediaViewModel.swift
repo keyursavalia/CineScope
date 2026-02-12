@@ -168,6 +168,29 @@ final class MediaViewModel {
         return items
     }
     
+    func fetchGalleryURLs(mediaType: String, id: Int) async -> [URL] {
+        let response: ImagesResponse?
+        switch mediaType {
+        case "movie":
+            response = try? await mediaService.fetchMovieImages(id: id)
+        case "tv":
+            response = try? await mediaService.fetchSeriesImages(id: id)
+        default:
+            response = nil
+        }
+        
+        guard let backdrops = response?.backdrops, !backdrops.isEmpty else { return [] }
+        
+        // Take top 15 highest-rated backdrops
+        let sorted = backdrops
+            .sorted { ($0.voteAverage ?? 0) > ($1.voteAverage ?? 0) }
+            .prefix(15)
+        
+        return sorted.compactMap { item in
+            URL(string: "https://image.tmdb.org/t/p/w780\(item.filePath)")
+        }
+    }
+    
     func buildPersonDisplayModel(for item: MediaItem) async -> PersonDisplayModel {
         var personDetail: PersonDetail? = nil
         if let personId = item.id {

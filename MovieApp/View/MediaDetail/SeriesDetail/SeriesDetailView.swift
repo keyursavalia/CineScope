@@ -9,6 +9,8 @@ final class SeriesDetailView: UIView {
     weak var delegate: SeriesDetailViewDelegate?
     
     private var castItems: [CastDisplayItem] = []
+    private var galleryURLs: [URL] = []
+    var imageService: ImageServiceProtocol?
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -76,7 +78,6 @@ final class SeriesDetailView: UIView {
         return stack
     }()
     
-    /// Status · Year range  (e.g. "Ended · 2011 – 2019")
     private let statusLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .medium)
@@ -85,7 +86,6 @@ final class SeriesDetailView: UIView {
         return label
     }()
     
-    /// Seasons · Episodes  (e.g. "8 Seasons · 73 Episodes")
     private let seasonEpisodeLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .medium)
@@ -165,6 +165,35 @@ final class SeriesDetailView: UIView {
         return cv
     }()
     
+    // MARK: - Gallery Section
+    private let galleryTitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Gallery"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var galleryCollectionView: UICollectionView = {
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: createGalleryLayout())
+        cv.showsHorizontalScrollIndicator = false
+        cv.backgroundColor = .clear
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.register(GalleryCell.self, forCellWithReuseIdentifier: GalleryCell.reuseIdentifier)
+        cv.decelerationRate = .fast
+        return cv
+    }()
+    
+    private let galleryPageControl: UIPageControl = {
+        let pc = UIPageControl()
+        pc.currentPageIndicatorTintColor = .label
+        pc.pageIndicatorTintColor = .systemGray4
+        pc.translatesAutoresizingMaskIntoConstraints = false
+        pc.isUserInteractionEnabled = false
+        return pc
+    }()
+    
     // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -184,6 +213,46 @@ final class SeriesDetailView: UIView {
         setupImageShadow()
         castCollectionView.dataSource = self
         castCollectionView.delegate = self
+        galleryCollectionView.dataSource = self
+        galleryCollectionView.delegate = self
+    }
+    
+    private func createGalleryLayout() -> UICollectionViewCompositionalLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.82),
+            heightDimension: .absolute(200)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .groupPagingCentered
+        section.interGroupSpacing = 12
+        
+        section.visibleItemsInvalidationHandler = { [weak self] items, offset, environment in
+            let containerWidth = environment.container.contentSize.width
+            guard containerWidth > 0 else { return }
+            let centerX = offset.x + containerWidth / 2
+            var closestIndex = 0
+            var closestDistance: CGFloat = .greatestFiniteMagnitude
+            for item in items {
+                let dist = abs(item.frame.midX - centerX)
+                if dist < closestDistance {
+                    closestDistance = dist
+                    closestIndex = item.indexPath.item
+                }
+            }
+            DispatchQueue.main.async {
+                self?.galleryPageControl.currentPage = closestIndex
+            }
+        }
+        
+        return UICollectionViewCompositionalLayout(section: section)
     }
     
     private func addSubviews() {
@@ -208,6 +277,9 @@ final class SeriesDetailView: UIView {
         contentView.addSubview(imageDescriptionStack)
         contentView.addSubview(castTitleLabel)
         contentView.addSubview(castCollectionView)
+        contentView.addSubview(galleryTitleLabel)
+        contentView.addSubview(galleryCollectionView)
+        contentView.addSubview(galleryPageControl)
         
         genreScrollView.addSubview(genreStackView)
     }
@@ -234,7 +306,7 @@ final class SeriesDetailView: UIView {
             titleRatingStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             titleRatingStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // 2. Genre (right below title)
+            // 2. Genre
             genreScrollView.topAnchor.constraint(equalTo: titleRatingStack.bottomAnchor, constant: 12),
             genreScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             genreScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -246,32 +318,29 @@ final class SeriesDetailView: UIView {
             genreStackView.bottomAnchor.constraint(equalTo: genreScrollView.contentLayoutGuide.bottomAnchor),
             genreStackView.heightAnchor.constraint(equalTo: genreScrollView.frameLayoutGuide.heightAnchor),
             
-            // 3. Status · Year range (below genres)
+            // 3. Status
             statusLabel.topAnchor.constraint(equalTo: genreScrollView.bottomAnchor, constant: 10),
             statusLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             statusLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Seasons · Episodes
             seasonEpisodeLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 4),
             seasonEpisodeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             seasonEpisodeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // 4. Image & Description below metadata
+            // 4. Image & Description
             imageDescriptionStack.topAnchor.constraint(equalTo: seasonEpisodeLabel.bottomAnchor, constant: 16),
             imageDescriptionStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageDescriptionStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Poster sizing
             showImageView.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.38),
             showImageView.heightAnchor.constraint(equalTo: showImageView.widthAnchor, multiplier: 1.4),
             
-            // Description label inside container
             showDescriptionLabel.topAnchor.constraint(equalTo: descriptionContainerView.topAnchor, constant: 10),
             showDescriptionLabel.leadingAnchor.constraint(equalTo: descriptionContainerView.leadingAnchor, constant: 10),
             showDescriptionLabel.trailingAnchor.constraint(equalTo: descriptionContainerView.trailingAnchor, constant: -10),
             showDescriptionLabel.bottomAnchor.constraint(lessThanOrEqualTo: descriptionContainerView.bottomAnchor, constant: -10),
             
-            // 5. Cast section
+            // 5. Cast
             castTitleLabel.topAnchor.constraint(equalTo: imageDescriptionStack.bottomAnchor, constant: 24),
             castTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             castTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -280,7 +349,20 @@ final class SeriesDetailView: UIView {
             castCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             castCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             castCollectionView.heightAnchor.constraint(equalToConstant: 150),
-            castCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            
+            // 6. Gallery
+            galleryTitleLabel.topAnchor.constraint(equalTo: castCollectionView.bottomAnchor, constant: 28),
+            galleryTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            galleryTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            galleryCollectionView.topAnchor.constraint(equalTo: galleryTitleLabel.bottomAnchor, constant: 12),
+            galleryCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            galleryCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            galleryCollectionView.heightAnchor.constraint(equalToConstant: 200),
+            
+            galleryPageControl.topAnchor.constraint(equalTo: galleryCollectionView.bottomAnchor, constant: 8),
+            galleryPageControl.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            galleryPageControl.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
     
@@ -315,16 +397,13 @@ final class SeriesDetailView: UIView {
         starImageView.tintColor = model.ratingColor
         showImageView.image = model.image
         
-        // Status · Year range
         let statusParts = [model.status, model.yearRange].compactMap { $0 }
         statusLabel.text = statusParts.joined(separator: " · ")
         statusLabel.isHidden = statusParts.isEmpty
         
-        // Seasons · Episodes
         seasonEpisodeLabel.text = model.seasonEpisodeText
         seasonEpisodeLabel.isHidden = (model.seasonEpisodeText == nil)
         
-        // Genres
         genreStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for genreName in model.genres {
             let pill = createGenrePill(with: genreName)
@@ -341,6 +420,17 @@ final class SeriesDetailView: UIView {
         castCollectionView.reloadData()
     }
     
+    func updateGallery(with urls: [URL]) {
+        galleryURLs = urls
+        let hasImages = !urls.isEmpty
+        galleryTitleLabel.isHidden = !hasImages
+        galleryCollectionView.isHidden = !hasImages
+        galleryPageControl.isHidden = !hasImages
+        galleryPageControl.numberOfPages = urls.count
+        galleryPageControl.currentPage = 0
+        galleryCollectionView.reloadData()
+    }
+    
     func clear() {
         showNameLabel.text = nil
         statusLabel.text = nil
@@ -350,25 +440,44 @@ final class SeriesDetailView: UIView {
         showImageView.image = nil
         castItems = []
         castCollectionView.reloadData()
+        galleryURLs = []
+        galleryCollectionView.reloadData()
     }
 }
 
-// MARK: - Cast CollectionView
+// MARK: - UICollectionViewDataSource & Delegate
 extension SeriesDetailView: UICollectionViewDataSource, UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return castItems.count
+        if collectionView === castCollectionView {
+            return castItems.count
+        } else {
+            return galleryURLs.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CastCell.reuseIdentifier, for: indexPath) as? CastCell else {
-            return UICollectionViewCell()
+        if collectionView === castCollectionView {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CastCell.reuseIdentifier, for: indexPath) as? CastCell else {
+                return UICollectionViewCell()
+            }
+            cell.configure(with: castItems[indexPath.item])
+            return cell
+        } else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GalleryCell.reuseIdentifier, for: indexPath) as? GalleryCell else {
+                return UICollectionViewCell()
+            }
+            if let service = imageService {
+                cell.configure(with: galleryURLs[indexPath.item], imageService: service)
+            }
+            return cell
         }
-        cell.configure(with: castItems[indexPath.item])
-        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let item = castItems[indexPath.item]
-        delegate?.seriesDetailView(self, didSelectCastMemberWithId: item.id)
+        if collectionView === castCollectionView {
+            let item = castItems[indexPath.item]
+            delegate?.seriesDetailView(self, didSelectCastMemberWithId: item.id)
+        }
     }
 }

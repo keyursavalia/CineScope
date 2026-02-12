@@ -36,6 +36,7 @@ final class MovieDetailViewController: UIViewController {
         
         searchBarView.delegate = self
         movieDetailView.delegate = self
+        movieDetailView.imageService = ImageService()
         movieDetailView.internalScrollView.delegate = self
         
         searchBarTopConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
@@ -58,10 +59,13 @@ final class MovieDetailViewController: UIViewController {
             let model = await viewModel.buildMovieDisplayModel(for: mediaItem)
             movieDetailView.update(with: model)
             
-            // Load cast
+            // Load cast and gallery
             if let movieId = mediaItem.id {
                 let cast = await viewModel.fetchCastDisplayItems(mediaType: "movie", id: movieId)
                 movieDetailView.updateCast(with: cast)
+                
+                let gallery = await viewModel.fetchGalleryURLs(mediaType: "movie", id: movieId)
+                movieDetailView.updateGallery(with: gallery)
             }
         }
     }
