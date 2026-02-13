@@ -126,14 +126,32 @@ extension SeriesDetailViewController: UIScrollViewDelegate {
         let currentOffset = scrollView.contentOffset.y
         let delta = currentOffset - lastScrollOffset
         
+        // Always show search bar when at the top
         if currentOffset <= 0 {
-            setSearchBarHidden(false, animated: true)
-        } else if delta > 6 {
-            setSearchBarHidden(true, animated: true)
-        } else if delta < -6 {
-            setSearchBarHidden(false, animated: true)
+            if !isSearchBarVisible {
+                setSearchBarHidden(false, animated: true)
+                lastScrollOffset = currentOffset
+            }
+            return
         }
         
-        lastScrollOffset = currentOffset
+        // Use a meaningful threshold to avoid jitter
+        let threshold: CGFloat = 15
+        
+        // Hide when scrolling down
+        if delta > threshold && isSearchBarVisible {
+            setSearchBarHidden(true, animated: true)
+            lastScrollOffset = currentOffset
+        }
+        // Show when scrolling up
+        else if delta < -threshold && !isSearchBarVisible {
+            setSearchBarHidden(false, animated: true)
+            lastScrollOffset = currentOffset
+        }
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // Capture the offset when user starts dragging to ensure stable comparison
+        lastScrollOffset = scrollView.contentOffset.y
     }
 }

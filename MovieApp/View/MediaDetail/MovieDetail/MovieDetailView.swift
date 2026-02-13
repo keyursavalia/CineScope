@@ -338,7 +338,7 @@ final class MovieDetailView: UIView {
             castCollectionView.heightAnchor.constraint(equalToConstant: 150),
             
             // 6. Gallery
-            galleryTitleLabel.topAnchor.constraint(equalTo: castCollectionView.bottomAnchor, constant: 28),
+            galleryTitleLabel.topAnchor.constraint(equalTo: castCollectionView.bottomAnchor, constant: 20),
             galleryTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             galleryTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
