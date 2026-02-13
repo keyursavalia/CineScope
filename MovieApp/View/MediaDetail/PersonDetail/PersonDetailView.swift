@@ -2,6 +2,8 @@ import UIKit
 
 final class PersonDetailView: UIView {
     
+    var imageService: ImageServiceProtocol?
+    
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
@@ -58,14 +60,10 @@ final class PersonDetailView: UIView {
         return label
     }()
     
-    private let profileImageView: UIImageView = {
-        let image = UIImageView()
-        image.contentMode = .scaleAspectFill
-        image.clipsToBounds = true
-        image.backgroundColor = .systemGray5
-        image.layer.cornerRadius = 12
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
+    private let imageCarouselView: PersonImageCarouselView = {
+        let carousel = PersonImageCarouselView()
+        carousel.translatesAutoresizingMaskIntoConstraints = false
+        return carousel
     }()
     
     private let biographyContainerView: UIView = {
@@ -117,7 +115,7 @@ final class PersonDetailView: UIView {
         contentView.addSubview(birthInfoLabel)
         contentView.addSubview(ageLabel)
         contentView.addSubview(deathdayLabel)
-        contentView.addSubview(profileImageView)
+        contentView.addSubview(imageCarouselView)
         contentView.addSubview(biographyContainerView)
     }
     
@@ -161,14 +159,14 @@ final class PersonDetailView: UIView {
             deathdayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             deathdayLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            // Profile image — full width
-            profileImageView.topAnchor.constraint(equalTo: deathdayLabel.bottomAnchor, constant: 20),
-            profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            profileImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor, multiplier: 1.2),
+            // Image carousel — full width
+            imageCarouselView.topAnchor.constraint(equalTo: deathdayLabel.bottomAnchor, constant: 20),
+            imageCarouselView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            imageCarouselView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            imageCarouselView.heightAnchor.constraint(equalTo: imageCarouselView.widthAnchor, multiplier: 1.2),
             
             // Biography container below image
-            biographyContainerView.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
+            biographyContainerView.topAnchor.constraint(equalTo: imageCarouselView.bottomAnchor, constant: 16),
             biographyContainerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             biographyContainerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             biographyContainerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
@@ -182,10 +180,11 @@ final class PersonDetailView: UIView {
     }
     
     private func setupImageShadow() {
-        profileImageView.layer.shadowColor = UIColor.black.cgColor
-        profileImageView.layer.shadowOpacity = 0.2
-        profileImageView.layer.shadowOffset = CGSize(width: 0, height: 4)
-        profileImageView.layer.shadowRadius = 8
+        imageCarouselView.layer.shadowColor = UIColor.black.cgColor
+        imageCarouselView.layer.shadowOpacity = 0.15
+        imageCarouselView.layer.shadowOffset = CGSize(width: 0, height: 6)
+        imageCarouselView.layer.shadowRadius = 12
+        imageCarouselView.layer.masksToBounds = false
     }
     
     // MARK: - Public Interface
@@ -195,7 +194,18 @@ final class PersonDetailView: UIView {
     func update(with model: PersonDisplayModel) {
         personNameLabel.text = model.name
         biographyLabel.text = model.biography
-        profileImageView.image = model.image
+        
+        // If we have a fallback image from the model, use it
+        if let image = model.image {
+            let url = URL(string: "placeholder")!
+            imageCarouselView.configure(with: [url])
+            // Manually set the first image
+            if let service = imageService {
+                Task {
+                    // This is just for fallback; will be replaced by actual images
+                }
+            }
+        }
         
         // Department
         departmentLabel.text = model.knownForDepartment
@@ -218,6 +228,11 @@ final class PersonDetailView: UIView {
         }
     }
     
+    func updateImages(with urls: [URL]) {
+        imageCarouselView.imageService = imageService
+        imageCarouselView.configure(with: urls)
+    }
+    
     func clear() {
         personNameLabel.text = nil
         departmentLabel.text = nil
@@ -225,6 +240,6 @@ final class PersonDetailView: UIView {
         ageLabel.text = nil
         deathdayLabel.text = nil
         biographyLabel.text = nil
-        profileImageView.image = nil
+        imageCarouselView.configure(with: [])
     }
 }

@@ -218,4 +218,20 @@ final class MediaViewModel {
             deathday: personDetail?.formattedDeathday
         )
     }
+    
+    func fetchPersonImageURLs(id: Int) async -> [URL] {
+        let response = try? await mediaService.fetchPersonImages(id: id)
+        
+        guard let profiles = response?.profiles, !profiles.isEmpty else { return [] }
+        
+        // Sort by vote average and take top 20
+        let sorted = profiles
+            .sorted { ($0.voteAverage ?? 0) > ($1.voteAverage ?? 0) }
+            .prefix(20)
+        
+        return sorted.compactMap { profile in
+            guard let filePath = profile.filePath else { return nil }
+            return URL(string: "https://image.tmdb.org/t/p/w780\(filePath)")
+        }
+    }
 }

@@ -36,6 +36,7 @@ final class PersonDetailViewController: UIViewController {
         
         searchBarView.delegate = self
         personDetailView.internalScrollView.delegate = self
+        personDetailView.imageService = ImageService()
         
         searchBarTopConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         
@@ -57,6 +58,12 @@ final class PersonDetailViewController: UIViewController {
             let model = await viewModel.buildPersonDisplayModel(for: mediaItem)
             personDetailView.update(with: model)
             title = model.name
+            
+            // Load person images for carousel
+            if let personId = mediaItem.id {
+                let imageURLs = await viewModel.fetchPersonImageURLs(id: personId)
+                personDetailView.updateImages(with: imageURLs)
+            }
         }
     }
     
