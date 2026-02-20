@@ -39,6 +39,17 @@ extension MediaItem {
         return title ?? name ?? "Unknown"
     }
     
+    /// Best description for list display: overview for movie/TV, known-for department for person.
+    var displayDescription: String? {
+        if mediaType == "person" {
+            if let dept = knownForDepartment, !dept.isEmpty {
+                return "Known for: \(dept)"
+            }
+            return "Tap to view full profile"
+        }
+        return overview
+    }
+    
     var displayImagePath: String? {
         return posterPath ?? profilePath
     }

@@ -90,7 +90,7 @@ final class SearchResultCell: UITableViewCell {
     
     func configure(with item: MediaItem) {
         titleLabel.text = item.displayName
-        overviewLabel.text = item.overview ?? "No description available"
+        overviewLabel.text = item.displayDescription ?? "No description available"
         yearLabel.text = item.releaseYear
         yearLabel.isHidden = (item.releaseYear == nil)
     }
