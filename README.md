@@ -4,9 +4,13 @@
 ---
 
 ## 📱 Preview
-| Search Workflow | Media Detail | Person Detail |
-| :---: | :---: | :---: |
-| ![Search workflow](SCREENS/CineScope-WORKFLOW.gif) | ![Media detail](SCREENS/CineScope-MEDIA-VIEW.png) | ![Person detail](SCREENS/CineScope-PERSON-VIEW.png) |
+<p align="center">
+  <img src="SCREENS/CineScope-WORKFLOW.gif" alt="Search workflow" width="420" />
+</p>
+
+| Media Detail | Person Detail |
+| :---: | :---: |
+| ![Media detail](SCREENS/CineScope-MEDIA-VIEW.png) | ![Person detail](SCREENS/CineScope-PERSON-VIEW.png) |
 
 ---
 
