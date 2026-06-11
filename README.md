@@ -32,6 +32,25 @@ No account. No subscription. No third-party packages. Everything is URLSession, 
 
 ---
 
+## Screenshots
+
+### Search Workflow
+
+<p align="center">
+  <img src="SCREENS/CineScope-WORKFLOW.gif" width="280" alt="Search and navigation workflow" />
+</p>
+
+<br/>
+
+### Detail Screens
+
+<table align="center"><tr>
+  <td align="center"><img src="SCREENS/CineScope-MEDIA-VIEW.png" width="280" alt="Movie and series detail" /><br/><sub>Movie / Series detail — poster, rating, cast, gallery</sub></td>
+  <td align="center"><img src="SCREENS/CineScope-PERSON-VIEW.png" width="280" alt="Person detail" /><br/><sub>Person detail — image carousel, biography, birth info</sub></td>
+</tr></table>
+
+---
+
 ## Features
 
 ### Search
