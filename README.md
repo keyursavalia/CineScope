@@ -84,3 +84,21 @@ When the user taps a result, `SearchResultsViewController` reads `mediaType` and
 Each detail view controller shares the same `MediaViewModel` instance injected at creation. The view model dispatches three concurrent async tasks when a detail screen loads — one for the full detail object, one for credits, one for images — and delivers each independently to the view as it completes. This means the screen populates progressively: metadata appears first, then cast, then gallery, without any single fetch blocking the others.
 
 All image loading goes through `ImageService`, which wraps `URLSession.data(from:)` in an async function. Images are fetched on demand as cells become visible and are not cached to disk — the in-memory fetch is fast enough for the use case and avoids managing a cache eviction policy.
+
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| **Language** | Swift |
+| **UI Framework** | UIKit — programmatic UI and Auto Layout, no Storyboards for main views |
+| **Architecture** | MVVM — `MediaViewModel` is the single shared view model; View Controllers own layout and delegate wiring |
+| **Networking** | URLSession — TMDB v3 REST API with Bearer token auth |
+| **Concurrency** | Swift structured concurrency — `async/await` for all network calls; `@MainActor` on the view model to keep UI updates on the main thread |
+| **Persistence** | Core Data — `GenreEntity` stores genre ID-to-name mappings; `UserDefaults` stores the last genre fetch timestamp |
+| **Image Loading** | `ImageService` — async `URLSession` fetches, no third-party library |
+| **External API** | TMDB v3 — multi-search, movie detail, series detail, person detail, credits, images |
+| **Dependency Injection** | Protocol-backed services (`MediaServiceProtocol`, `ImageServiceProtocol`) injected into the view model for testability |
+| **Deployment Target** | iOS 26+ |
+| **Dependencies** | None |
