@@ -185,3 +185,25 @@ CineScope/
 │               ├── PersonDetailViewController.swift
 │               └── PersonImageCarouselView.swift  ← Horizontal paging image scroll view
 ```
+
+---
+
+## Getting Started
+
+**Requirements:** Xcode 17 and an iOS 26 simulator or device. One external API key required.
+
+```bash
+git clone https://github.com/keyursavalia/CineScope.git
+cd CineScope
+open MovieApp.xcodeproj
+```
+
+Create `MovieApp/Configuration/APIKey.plist` and add one entry:
+
+| Key | Type | Value |
+|---|---|---|
+| `TMDB_API_TOKEN` | String | Your TMDB v4 access token (without the `Bearer ` prefix) |
+
+You can generate a free access token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api). The token is read at launch by `APIKey.swift` and injected into every request as a Bearer authorization header.
+
+Press `Cmd R`. The genre cache populates on first launch in the background. All search and detail functionality is live immediately — the only network dependency is TMDB.
