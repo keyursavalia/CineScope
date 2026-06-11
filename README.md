@@ -68,3 +68,19 @@ No account. No subscription. No third-party packages. Everything is URLSession, 
 - TMDB genre IDs are fetched once on launch via `GenreManager` and written to Core Data
 - Subsequent launches read from Core Data immediately, with a background refresh if the data is older than seven days
 - Genre names are resolved on both the search results list and detail screens without extra network calls
+
+---
+
+## How Search and Routing Work
+
+A single search triggers one request to the TMDB `/search/multi` endpoint. The response is a heterogeneous list of `MediaItem` objects — each carries a `mediaType` field alongside whichever fields are relevant to its type (title vs. name, poster vs. profile photo, genres vs. known-for department).
+
+When the user taps a result, `SearchResultsViewController` reads `mediaType` and instantiates the correct view controller:
+
+- `movie` → `MovieDetailViewController`
+- `tv` → `SeriesDetailViewController`
+- `person` → `PersonDetailViewController`
+
+Each detail view controller shares the same `MediaViewModel` instance injected at creation. The view model dispatches three concurrent async tasks when a detail screen loads — one for the full detail object, one for credits, one for images — and delivers each independently to the view as it completes. This means the screen populates progressively: metadata appears first, then cast, then gallery, without any single fetch blocking the others.
+
+All image loading goes through `ImageService`, which wraps `URLSession.data(from:)` in an async function. Images are fetched on demand as cells become visible and are not cached to disk — the in-memory fetch is fast enough for the use case and avoids managing a cache eviction policy.
