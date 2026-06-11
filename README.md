@@ -207,3 +207,14 @@ Create `MovieApp/Configuration/APIKey.plist` and add one entry:
 You can generate a free access token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api). The token is read at launch by `APIKey.swift` and injected into every request as a Bearer authorization header.
 
 Press `Cmd R`. The genre cache populates on first launch in the background. All search and detail functionality is live immediately — the only network dependency is TMDB.
+
+---
+
+## What's Next
+
+- **Image cache** — persist loaded poster and backdrop images in memory or on disk to eliminate redundant fetches when navigating back and forth between results and detail screens
+- **Watchlist** — save movies and series to a local SwiftData or Core Data store so users can build a personal queue without leaving the app
+- **Person filmography** — list the complete movie and TV credits for a person on their detail screen, each one tappable to navigate directly to that title's detail page
+- **Trending feed** — replace the empty initial state with a live feed of trending movies and TV pulled from TMDB, giving users a starting point without needing a search query
+- **Accessibility pass** — full VoiceOver audit across the search list, cast carousel, gallery pager, and all three detail screens
+- **Error state views** — replace alert dialogs with inline error states in the results list when the network is unavailable or a search returns no matches
