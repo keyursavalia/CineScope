@@ -29,3 +29,42 @@ A movie taps through to a full detail screen: poster, rating, genre pills, runti
 Genre mappings are cached locally so the app can label results immediately without a round trip. The cache refreshes from TMDB every seven days in the background without the user noticing.
 
 No account. No subscription. No third-party packages. Everything is URLSession, UIKit, Core Data, and Swift Concurrency.
+
+---
+
+## Features
+
+### Search
+
+- A single **multi-search** endpoint queries TMDB for movies, TV series, and people in one request — the result list is mixed and sorted by relevance
+- Custom `SearchBarView` built in UIKit with a delegate-based interface; keyboard dismisses on scroll drag
+- **Scroll-to-hide search bar** — the bar slides out of view as you scroll down results and slides back in when you scroll up, keeping as much content on screen as possible
+- Each result cell shows a thumbnail, title, media type badge, and vote average pulled asynchronously without blocking the main thread
+- Tapping a result routes to the correct detail screen automatically based on the `mediaType` field returned by TMDB (`movie`, `tv`, or `person`)
+
+### Movie Detail
+
+- Full-width poster with a drop shadow, title, and a color-coded rating badge (green ≥ 7.0, orange ≥ 5.0, red below)
+- Genre pills in a horizontal scroll view — genres resolved from the detail endpoint, falling back to the cached genre dictionary
+- Runtime and release date formatted and displayed as a single metadata line
+- Overview text in a rounded secondary-background container
+- **Cast carousel** — horizontally scrollable collection view, top 20 cast members sorted by billing order, each showing a profile photo and character name; tapping a cast member navigates to their person detail screen
+- **Backdrop gallery** — paged compositional layout with group-paging centering, top 15 backdrops sorted by vote average, a `UIPageControl` tracking the current page
+
+### Series Detail
+
+- Identical poster, rating, genre, and overview layout as movie detail
+- Additional metadata: air status (e.g., Returning Series, Ended), year range, season count, and episode count
+
+### Person Detail
+
+- Name, known-for department tag, birth date and birthplace, age, and (if applicable) death date rendered in red
+- **Image carousel** — horizontally paged scroll view of up to 20 profile photos sorted by vote average, lazy-loaded asynchronously
+- Biography in a rounded container below the carousel
+- Navigable from cast cells on any movie or series detail screen
+
+### Genre Cache
+
+- TMDB genre IDs are fetched once on launch via `GenreManager` and written to Core Data
+- Subsequent launches read from Core Data immediately, with a background refresh if the data is older than seven days
+- Genre names are resolved on both the search results list and detail screens without extra network calls
