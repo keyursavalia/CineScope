@@ -102,3 +102,86 @@ All image loading goes through `ImageService`, which wraps `URLSession.data(from
 | **Dependency Injection** | Protocol-backed services (`MediaServiceProtocol`, `ImageServiceProtocol`) injected into the view model for testability |
 | **Deployment Target** | iOS 26+ |
 | **Dependencies** | None |
+
+---
+
+## Project Structure
+
+```
+CineScope/
+├── MovieApp.xcodeproj/
+│
+├── MovieApp/
+│   ├── AppDelegate.swift                   ← UIApplicationDelegate, genre cache refresh on launch
+│   ├── SceneDelegate.swift                 ← Window setup, root navigation controller
+│   │
+│   ├── Configuration/
+│   │   ├── APIKey.swift                    ← Reads TMDB_API_TOKEN from APIKey.plist
+│   │   └── APIKey.plist                    ← Git-ignored; add your own token here
+│   │
+│   ├── Model/
+│   │   ├── SearchResponse.swift            ← Decodable wrapper around TMDB /search/multi results
+│   │   ├── Genre.swift                     ← Genre ID + name; GenreEntity for Core Data
+│   │   ├── MovieDetail.swift               ← Full movie detail response + formatting helpers
+│   │   ├── SeriesDetail.swift              ← Full TV series detail response + formatting helpers
+│   │   ├── PersonDetail.swift              ← Full person detail response + age/birth helpers
+│   │   ├── CreditsResponse.swift           ← Cast member list shared by movie and series
+│   │   ├── ImagesResponse.swift            ← Backdrop list for movies and series
+│   │   └── PersonImagesResponse.swift      ← Profile photo list for people
+│   │
+│   ├── Service/
+│   │   ├── Network/
+│   │   │   ├── MediaService.swift              ← URLSession client; base URL and token setup
+│   │   │   ├── MediaServiceProtocol.swift      ← Full protocol surface (search, detail, credits, images)
+│   │   │   ├── NetworkError.swift              ← Typed error cases (invalidURL, invalidResponse, decoding)
+│   │   │   ├── Movie/
+│   │   │   │   ├── MovieService.swift          ← /movie/{id}, /movie/{id}/credits, /movie/{id}/images
+│   │   │   │   └── MovieServiceProtocol.swift
+│   │   │   ├── Series/
+│   │   │   │   ├── SeriesService.swift         ← /tv/{id}, /tv/{id}/credits, /tv/{id}/images
+│   │   │   │   └── SeriesServiceProtocol.swift
+│   │   │   ├── Person/
+│   │   │   │   ├── PersonService.swift         ← /person/{id}, /person/{id}/images
+│   │   │   │   └── PersonServiceProtocol.swift
+│   │   │   ├── Search/
+│   │   │   │   ├── SearchService.swift         ← /search/multi
+│   │   │   │   └── SearchServiceProtocol.swift
+│   │   │   └── Genre/
+│   │   │       ├── GenreService.swift          ← /genre/movie/list + /genre/tv/list
+│   │   │       └── GenreServiceProtocol.swift
+│   │   ├── Image/
+│   │   │   ├── ImageService.swift              ← async URLSession image fetch
+│   │   │   └── ImageServiceProtocol.swift
+│   │   ├── Genre/
+│   │   │   └── GenreManager.swift              ← Singleton; loads from Core Data, refreshes every 7 days
+│   │   └── Persistence/
+│   │       └── CoreDataManager.swift           ← NSPersistentContainer; saveGenres + fetchGenreDictionary
+│   │
+│   ├── ViewModel/
+│   │   ├── MediaViewModel.swift            ← @MainActor; search, build display models, fetch cast/gallery/person images
+│   │   ├── MovieDisplayModel.swift         ← Value type: title, rating, genres, image, runtime, date
+│   │   ├── SeriesDisplayModel.swift        ← Value type: adds status, year range, season/episode text
+│   │   ├── PersonDisplayModel.swift        ← Value type: name, biography, birth info, age, deathday
+│   │   └── CastDisplayItem.swift          ← Lightweight cast member: id, name, character, image
+│   │
+│   └── View/
+│       ├── SearchBar/
+│       │   ├── SearchBarView.swift         ← Custom UIView search bar with delegate protocol
+│       │   └── SearchResultCell.swift      ← UITableViewCell: thumbnail, title, type badge, rating
+│       ├── SearchResultsView/
+│       │   ├── SearchResultsView.swift     ← UIView wrapping the results UITableView
+│       │   └── SearchResultsViewController.swift  ← Root VC; scroll-to-hide bar, routing on tap
+│       └── MediaDetail/
+│           ├── CastCell.swift              ← Horizontal cast collection view cell
+│           ├── GalleryCell.swift           ← Paged backdrop collection view cell
+│           ├── MovieDetail/
+│           │   ├── MovieDetailView.swift       ← Full programmatic layout: poster, metadata, cast, gallery
+│           │   └── MovieDetailViewController.swift
+│           ├── SeriesDetail/
+│           │   ├── SeriesDetailView.swift      ← Same layout as movie, with series-specific metadata
+│           │   └── SeriesViewController.swift
+│           └── PersonDetail/
+│               ├── PersonDetailView.swift      ← Carousel + biography layout
+│               ├── PersonDetailViewController.swift
+│               └── PersonImageCarouselView.swift  ← Horizontal paging image scroll view
+```
