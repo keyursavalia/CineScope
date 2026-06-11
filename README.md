@@ -218,3 +218,15 @@ Press `Cmd R`. The genre cache populates on first launch in the background. All 
 - **Trending feed** — replace the empty initial state with a live feed of trending movies and TV pulled from TMDB, giving users a starting point without needing a search query
 - **Accessibility pass** — full VoiceOver audit across the search list, cast carousel, gallery pager, and all three detail screens
 - **Error state views** — replace alert dialogs with inline error states in the results list when the network is unavailable or a search returns no matches
+
+---
+
+## Contributing
+
+Fork the repo, branch from `main`, one fix or feature per PR. Commit prefixes: `init:` / `add:` / `fix:` / `feat:`. Bug reports and ideas are welcome as GitHub issues.
+
+---
+
+## License
+
+[MIT](LICENSE) · © 2026 Keyur Savalia
